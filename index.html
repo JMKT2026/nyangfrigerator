@@ -403,8 +403,16 @@
 
   <!-- ADMIN (사냥터 전체 관리) -->
   <section class="panel" id="panel-admin">
-    <h2 class="section-title">사냥터 관리</h2>
-    <p class="section-sub">유저들이 등록한 모든 사료를 수정하거나 삭제할 수 있어요. (관리자에게만 보여요)</p>
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px;">
+      <div>
+        <h2 class="section-title">사냥터 관리</h2>
+        <p class="section-sub">사료를 새로 등록하거나, 유저가 등록한 항목·기본 제공 사료를 모두 수정·삭제할 수 있어요. (관리자에게만 보여요)</p>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <button class="btn btn-ghost btn-sm" id="btn-migrate-builtin">기본 제공 사료 가져오기</button>
+        <button class="btn btn-coral btn-sm" id="btn-admin-add-food">+ 새 사료 등록</button>
+      </div>
+    </div>
     <div class="entry-list" id="admin-food-list"></div>
   </section>
 
@@ -505,23 +513,671 @@ const ACTIVITY_LEVELS = [
   {id:'senior', label:'노묘 (7세 이상)', factor:1.1, desc:'활동량 감소'},
 ];
 
-const BUILTIN_FOODS = [
-  {id:'b1', brand:'로얄캐닌', name:'인도어 어덜트', type:'dry', kcal:370, builtin:true},
-  {id:'b2', brand:'로얄캐닌', name:'헤어볼 케어', type:'dry', kcal:365, builtin:true},
-  {id:'b3', brand:'힐스', name:'사이언스 다이어트 어덜트', type:'dry', kcal:355, builtin:true},
-  {id:'b4', brand:'힐스', name:'i/d 소화기 케어 캔', type:'wet', kcal:95, builtin:true},
-  {id:'b5', brand:'퓨리나 원', name:'인도어 어드밴티지', type:'dry', kcal:360, builtin:true},
-  {id:'b6', brand:'오리젠', name:'오리지널 캣', type:'dry', kcal:400, builtin:true},
-  {id:'b7', brand:'아카나', name:'와일드 프레리 캣', type:'dry', kcal:395, builtin:true},
-  {id:'b9', brand:'이나바', name:'챠오츄르 참치', type:'treat', kcal:60, builtin:true},
-  {id:'b10', brand:'웰니스', name:'컴플리트 헬스 캔', type:'wet', kcal:90, builtin:true},
-  {id:'b11', brand:'나우프레시', name:'그레인프리 어덜트', type:'dry', kcal:378, builtin:true},
-  {id:'b12', brand:'캐년', name:'그레인프리 캣', type:'dry', kcal:390, builtin:true},
-  {id:'f1', brand:'지위픽', name:'에어드라이 고등어&양고기', type:'freeze', kcal:480, builtin:true},
-  {id:'f2', brand:'지위픽', name:'에어드라이 양고기', type:'freeze', kcal:560, builtin:true},
-  {id:'f3', brand:'지위픽', name:'에어드라이 소고기', type:'freeze', kcal:550, builtin:true},
-  {id:'f4', brand:'스텔라앤츄이스', name:'동결건조 디너모젤 살몬&대구', type:'freeze', kcal:450, builtin:true},
-  {id:'f5', brand:'프라이멀', name:'동결건조 너겟 치킨', type:'freeze', kcal:470, builtin:true},
+const SEED_FOODS = [
+  {
+    "brand": "로얄캐닌",
+    "name": "인도어 어덜트",
+    "type": "dry",
+    "kcal": 374,
+    "packSize": null,
+    "packKcal": null
+  },
+  {
+    "brand": "로얄캐닌",
+    "name": "인도어 롱헤어",
+    "type": "dry",
+    "kcal": 341,
+    "packSize": null,
+    "packKcal": null
+  },
+  {
+    "brand": "아카나",
+    "name": "홈스테드 하비스트",
+    "type": "dry",
+    "kcal": 376,
+    "packSize": null,
+    "packKcal": null
+  },
+  {
+    "brand": "아카나",
+    "name": "그래스랜드 캣",
+    "type": "dry",
+    "kcal": 393,
+    "packSize": null,
+    "packKcal": null
+  },
+  {
+    "brand": "아카나",
+    "name": "바운티풀 캐치 캣",
+    "type": "dry",
+    "kcal": 380,
+    "packSize": null,
+    "packKcal": null
+  },
+  {
+    "brand": "아카나",
+    "name": "와일드 프레이리 캣",
+    "type": "dry",
+    "kcal": 393,
+    "packSize": null,
+    "packKcal": null
+  },
+  {
+    "brand": "오리젠",
+    "name": "키튼 포뮬라",
+    "type": "dry",
+    "kcal": 412,
+    "packSize": null,
+    "packKcal": null
+  },
+  {
+    "brand": "오리젠",
+    "name": "식스 피쉬",
+    "type": "dry",
+    "kcal": 400,
+    "packSize": null,
+    "packKcal": null
+  },
+  {
+    "brand": "오리젠",
+    "name": "오리지널 캣",
+    "type": "dry",
+    "kcal": 416,
+    "packSize": null,
+    "packKcal": null
+  },
+  {
+    "brand": "오리젠",
+    "name": "피트 앤 트림 캣",
+    "type": "dry",
+    "kcal": 371,
+    "packSize": null,
+    "packKcal": null
+  },
+  {
+    "brand": "웰츠",
+    "name": "캣 저지방 다이어트",
+    "type": "dry",
+    "kcal": 340,
+    "packSize": null,
+    "packKcal": null
+  },
+  {
+    "brand": "웰츠",
+    "name": "캣 저지방 인도어",
+    "type": "dry",
+    "kcal": 340,
+    "packSize": null,
+    "packKcal": null
+  },
+  {
+    "brand": "웰츠",
+    "name": "캣 어덜트",
+    "type": "dry",
+    "kcal": 405,
+    "packSize": null,
+    "packKcal": null
+  },
+  {
+    "brand": "웰츠",
+    "name": "캣 연어",
+    "type": "dry",
+    "kcal": 410,
+    "packSize": null,
+    "packKcal": null
+  },
+  {
+    "brand": "웰츠",
+    "name": "캣 오리",
+    "type": "dry",
+    "kcal": 400,
+    "packSize": null,
+    "packKcal": null
+  },
+  {
+    "brand": "웰츠",
+    "name": "캣 올라이프",
+    "type": "dry",
+    "kcal": 410,
+    "packSize": null,
+    "packKcal": null
+  },
+  {
+    "brand": "몬지",
+    "name": "모노프로틴(L.I.D) 어덜트 토끼",
+    "type": "dry",
+    "kcal": 407,
+    "packSize": null,
+    "packKcal": null
+  },
+  {
+    "brand": "몬지",
+    "name": "모노프로틴(L.I.D) 어덜트 송어",
+    "type": "dry",
+    "kcal": 408,
+    "packSize": null,
+    "packKcal": null
+  },
+  {
+    "brand": "퓨리나",
+    "name": "원 캣 성묘용 순살 연어 앤 참치",
+    "type": "dry",
+    "kcal": 370,
+    "packSize": null,
+    "packKcal": null
+  },
+  {
+    "brand": "퓨리나",
+    "name": "원 캣 성묘용 닭고기",
+    "type": "dry",
+    "kcal": 370,
+    "packSize": null,
+    "packKcal": null
+  },
+  {
+    "brand": "퓨리나",
+    "name": "원 캣 성묘용 인도어",
+    "type": "dry",
+    "kcal": 350,
+    "packSize": null,
+    "packKcal": null
+  },
+  {
+    "brand": "퓨리나",
+    "name": "프로플랜 리브 클리어 어덜트",
+    "type": "dry",
+    "kcal": 370,
+    "packSize": null,
+    "packKcal": null
+  },
+  {
+    "brand": "퓨리나",
+    "name": "프로플랜 연어 어덜트",
+    "type": "dry",
+    "kcal": 370,
+    "packSize": null,
+    "packKcal": null
+  },
+  {
+    "brand": "ANF",
+    "name": "6 Free+ 인도어 어덜트",
+    "type": "dry",
+    "kcal": 355,
+    "packSize": null,
+    "packKcal": null
+  },
+  {
+    "brand": "ANF",
+    "name": "6 Free+ 인도어 웨이트케어",
+    "type": "dry",
+    "kcal": 335,
+    "packSize": null,
+    "packKcal": null
+  },
+  {
+    "brand": "힐스",
+    "name": "어덜트",
+    "type": "dry",
+    "kcal": 394,
+    "packSize": null,
+    "packKcal": null
+  },
+  {
+    "brand": "힐스",
+    "name": "어덜트 인도어",
+    "type": "dry",
+    "kcal": 349,
+    "packSize": null,
+    "packKcal": null
+  },
+  {
+    "brand": "힐스",
+    "name": "퍼펙트 웨이트",
+    "type": "dry",
+    "kcal": 336,
+    "packSize": null,
+    "packKcal": null
+  },
+  {
+    "brand": "나우",
+    "name": "프레쉬 어덜트",
+    "type": "dry",
+    "kcal": 387,
+    "packSize": null,
+    "packKcal": null
+  },
+  {
+    "brand": "나우",
+    "name": "굿그레이비 어덜트 치킨레시피",
+    "type": "dry",
+    "kcal": 377,
+    "packSize": null,
+    "packKcal": null
+  },
+  {
+    "brand": "나우",
+    "name": "굿그레이비 어덜트 연어레시피",
+    "type": "dry",
+    "kcal": 377,
+    "packSize": null,
+    "packKcal": null
+  },
+  {
+    "brand": "게더",
+    "name": "프리에이커 치킨",
+    "type": "dry",
+    "kcal": 366,
+    "packSize": null,
+    "packKcal": null
+  },
+  {
+    "brand": "먀오",
+    "name": "동결건조 비프&호키",
+    "type": "freeze",
+    "kcal": 544,
+    "packSize": null,
+    "packKcal": null
+  },
+  {
+    "brand": "먀오",
+    "name": "동결건조 램&호키",
+    "type": "freeze",
+    "kcal": 579,
+    "packSize": null,
+    "packKcal": null
+  },
+  {
+    "brand": "먀오",
+    "name": "동결건조 램&킹새몬",
+    "type": "freeze",
+    "kcal": 608,
+    "packSize": null,
+    "packKcal": null
+  },
+  {
+    "brand": "먀오",
+    "name": "에어드라이 비프&호키",
+    "type": "freeze",
+    "kcal": 571,
+    "packSize": null,
+    "packKcal": null
+  },
+  {
+    "brand": "먀오",
+    "name": "에어드라이 베니슨 레시피",
+    "type": "freeze",
+    "kcal": 540,
+    "packSize": null,
+    "packKcal": null
+  },
+  {
+    "brand": "먀오",
+    "name": "에어드라이 치킨&킹새몬",
+    "type": "freeze",
+    "kcal": 559,
+    "packSize": null,
+    "packKcal": null
+  },
+  {
+    "brand": "바이탈에센셜",
+    "name": "캣 소프트 닙스 돼지",
+    "type": "freeze",
+    "kcal": 385,
+    "packSize": null,
+    "packKcal": null
+  },
+  {
+    "brand": "바이탈에센셜",
+    "name": "캣 소프트 닙스 칠면조",
+    "type": "freeze",
+    "kcal": 395,
+    "packSize": null,
+    "packKcal": null
+  },
+  {
+    "brand": "바이탈에센셜",
+    "name": "캣 소프트 닙스 치킨",
+    "type": "freeze",
+    "kcal": 445,
+    "packSize": null,
+    "packKcal": null
+  },
+  {
+    "brand": "바이탈에센셜",
+    "name": "캣 소프트 닙스 오리",
+    "type": "freeze",
+    "kcal": 410,
+    "packSize": null,
+    "packKcal": null
+  },
+  {
+    "brand": "라노바",
+    "name": "동결건조 사료 치킨",
+    "type": "freeze",
+    "kcal": 419,
+    "packSize": null,
+    "packKcal": null
+  },
+  {
+    "brand": "라노바",
+    "name": "동결건조 사료 치킨&연어",
+    "type": "freeze",
+    "kcal": 419,
+    "packSize": null,
+    "packKcal": null
+  },
+  {
+    "brand": "로우즈",
+    "name": "슈레디드 캔 치킨",
+    "type": "wet",
+    "kcal": 83.5,
+    "packSize": 85,
+    "packKcal": 71
+  },
+  {
+    "brand": "로우즈",
+    "name": "슈레디드 캔 치킨&호박",
+    "type": "wet",
+    "kcal": 83.5,
+    "packSize": 85,
+    "packKcal": 71
+  },
+  {
+    "brand": "로우즈",
+    "name": "슈레디드 캔 참치&연어",
+    "type": "wet",
+    "kcal": 85.9,
+    "packSize": 85,
+    "packKcal": 73
+  },
+  {
+    "brand": "로우즈",
+    "name": "슈레디드 캔 참치&치킨",
+    "type": "wet",
+    "kcal": 83.5,
+    "packSize": 85,
+    "packKcal": 71
+  },
+  {
+    "brand": "로우즈",
+    "name": "슈레디드 캔 치킨&오리",
+    "type": "wet",
+    "kcal": 88.2,
+    "packSize": 85,
+    "packKcal": 75
+  },
+  {
+    "brand": "로우즈",
+    "name": "슈레디드 캔 치킨&치킨간",
+    "type": "wet",
+    "kcal": 87.1,
+    "packSize": 85,
+    "packKcal": 74
+  },
+  {
+    "brand": "로우즈",
+    "name": "그레이비 캔 치킨&치킨간",
+    "type": "wet",
+    "kcal": 78.8,
+    "packSize": 85,
+    "packKcal": 67
+  },
+  {
+    "brand": "로우즈",
+    "name": "그레이비 캔 정어리&호박",
+    "type": "wet",
+    "kcal": 82.4,
+    "packSize": 85,
+    "packKcal": 70
+  },
+  {
+    "brand": "로우즈",
+    "name": "그레이비 캔 연어, 소고기&코코넛오일",
+    "type": "wet",
+    "kcal": 84.7,
+    "packSize": 85,
+    "packKcal": 72
+  },
+  {
+    "brand": "로우즈",
+    "name": "그레이비 캔 참치&고등어",
+    "type": "wet",
+    "kcal": 68.2,
+    "packSize": 85,
+    "packKcal": 58
+  },
+  {
+    "brand": "로우즈",
+    "name": "그레이비 캔 참치&연어",
+    "type": "wet",
+    "kcal": 70.6,
+    "packSize": 85,
+    "packKcal": 60
+  },
+  {
+    "brand": "로우즈",
+    "name": "오쥬파우치 참치&연어",
+    "type": "wet",
+    "kcal": 87,
+    "packSize": 69,
+    "packKcal": 60
+  },
+  {
+    "brand": "로우즈",
+    "name": "오쥬파우치 치킨 닭가슴살&호박",
+    "type": "wet",
+    "kcal": 87,
+    "packSize": 69,
+    "packKcal": 60
+  },
+  {
+    "brand": "로우즈",
+    "name": "오쥬파우치 참치&고등어",
+    "type": "wet",
+    "kcal": 82.6,
+    "packSize": 69,
+    "packKcal": 57
+  },
+  {
+    "brand": "로우즈",
+    "name": "오쥬파우치 치킨 닭가슴살&치킨간",
+    "type": "wet",
+    "kcal": 88.4,
+    "packSize": 69,
+    "packKcal": 61
+  },
+  {
+    "brand": "지위픽",
+    "name": "캣 소고기",
+    "type": "wet",
+    "kcal": 124.7,
+    "packSize": 85,
+    "packKcal": 106
+  },
+  {
+    "brand": "지위픽",
+    "name": "캣 양고기",
+    "type": "wet",
+    "kcal": 131.8,
+    "packSize": 85,
+    "packKcal": 112
+  },
+  {
+    "brand": "지위픽",
+    "name": "캣 고등어&양고기",
+    "type": "wet",
+    "kcal": 120,
+    "packSize": 85,
+    "packKcal": 102
+  },
+  {
+    "brand": "지위픽",
+    "name": "캣 토끼&양고기",
+    "type": "wet",
+    "kcal": 109.4,
+    "packSize": 85,
+    "packKcal": 93
+  },
+  {
+    "brand": "지위픽",
+    "name": "캣 치킨",
+    "type": "wet",
+    "kcal": 131.8,
+    "packSize": 85,
+    "packKcal": 112
+  },
+  {
+    "brand": "지위픽",
+    "name": "캣 고등어",
+    "type": "wet",
+    "kcal": 107.1,
+    "packSize": 85,
+    "packKcal": 91
+  },
+  {
+    "brand": "아보덤",
+    "name": "그레인프리 연어&치킨캔",
+    "type": "wet",
+    "kcal": 88.2,
+    "packSize": 85,
+    "packKcal": 75
+  },
+  {
+    "brand": "아보덤",
+    "name": "그레인프리 치킨청크캔",
+    "type": "wet",
+    "kcal": 85.9,
+    "packSize": 85,
+    "packKcal": 73
+  },
+  {
+    "brand": "아보덤",
+    "name": "그레인프리 참치&게살캔",
+    "type": "wet",
+    "kcal": 82.4,
+    "packSize": 85,
+    "packKcal": 70
+  },
+  {
+    "brand": "아보덤",
+    "name": "그레인프리 참치&새우캔",
+    "type": "wet",
+    "kcal": 83.5,
+    "packSize": 85,
+    "packKcal": 71
+  },
+  {
+    "brand": "아보덤",
+    "name": "그레인프리 참치&치킨캔",
+    "type": "wet",
+    "kcal": 88.2,
+    "packSize": 85,
+    "packKcal": 75
+  },
+  {
+    "brand": "아보덤",
+    "name": "그레인프리 정어리&새우&게살캔",
+    "type": "wet",
+    "kcal": 74.1,
+    "packSize": 85,
+    "packKcal": 63
+  },
+  {
+    "brand": "아보덤",
+    "name": "그레인프리 치킨&오리캔",
+    "type": "wet",
+    "kcal": 96.5,
+    "packSize": 85,
+    "packKcal": 82
+  },
+  {
+    "brand": "ZEAL",
+    "name": "캣 소고기",
+    "type": "wet",
+    "kcal": 138.9,
+    "packSize": 90,
+    "packKcal": 125
+  },
+  {
+    "brand": "ZEAL",
+    "name": "캣 사슴고기",
+    "type": "wet",
+    "kcal": 116.7,
+    "packSize": 90,
+    "packKcal": 105
+  },
+  {
+    "brand": "ZEAL",
+    "name": "캣 양고기",
+    "type": "wet",
+    "kcal": 145.6,
+    "packSize": 90,
+    "packKcal": 131
+  },
+  {
+    "brand": "ZEAL",
+    "name": "캣 치킨&연어",
+    "type": "wet",
+    "kcal": 123.3,
+    "packSize": 90,
+    "packKcal": 111
+  },
+  {
+    "brand": "ZEAL",
+    "name": "캣 치킨",
+    "type": "wet",
+    "kcal": 104.4,
+    "packSize": 90,
+    "packKcal": 94
+  },
+  {
+    "brand": "질란디아",
+    "name": "닭고기 파테",
+    "type": "wet",
+    "kcal": 98.9,
+    "packSize": 90,
+    "packKcal": 89
+  },
+  {
+    "brand": "질란디아",
+    "name": "소고기 파테",
+    "type": "wet",
+    "kcal": 123.3,
+    "packSize": 90,
+    "packKcal": 111
+  },
+  {
+    "brand": "질란디아",
+    "name": "사슴고기 파테",
+    "type": "wet",
+    "kcal": 118.9,
+    "packSize": 90,
+    "packKcal": 107
+  },
+  {
+    "brand": "질란디아",
+    "name": "양고기 파테",
+    "type": "wet",
+    "kcal": 122.2,
+    "packSize": 90,
+    "packKcal": 110
+  },
+  {
+    "brand": "질란디아",
+    "name": "연어 파테",
+    "type": "wet",
+    "kcal": 85.6,
+    "packSize": 90,
+    "packKcal": 77
+  },
+  {
+    "brand": "질란디아",
+    "name": "왈라피 파테",
+    "type": "wet",
+    "kcal": 81.1,
+    "packSize": 90,
+    "packKcal": 73
+  }
 ];
 
 let state = { cats: [], customFoods: [], entries: [] };
@@ -550,7 +1206,7 @@ const db = firebase.firestore();
 let currentUser = null;
 
 // 관리자로 지정할 구글 로그인 이메일을 여기에 넣어주세요. (여러 명이면 콤마로 추가)
-const ADMIN_EMAILS = ["duckyy0912@gmail.com"];
+const ADMIN_EMAILS = ["여기에_당신의_구글_이메일@gmail.com"];
 
 document.getElementById('btn-google-login').addEventListener('click', async ()=>{
   const provider = new firebase.auth.GoogleAuthProvider();
@@ -668,7 +1324,11 @@ async function deleteFoodFromCatalog(id){
   }
 }
 
-function allFoods(){ return [...BUILTIN_FOODS, ...state.customFoods]; }
+function allFoods(){
+  const migratedKeys = new Set(state.customFoods.map(f=>f.brand+'|'+f.name));
+  const remainingBuiltins = SEED_FOODS.filter(f=>!migratedKeys.has(f.brand+'|'+f.name));
+  return [...remainingBuiltins, ...state.customFoods];
+}
 function foodById(id){ return allFoods().find(f=>f.id===id); }
 function catById(id){ return state.cats.find(c=>c.id===id); }
 function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
@@ -978,6 +1638,24 @@ function openFoodEditModal(id){
   }
   openModal('modal-food');
 }
+document.getElementById('btn-admin-add-food').addEventListener('click', ()=>{
+  document.getElementById('btn-add-food').click();
+});
+document.getElementById('btn-migrate-builtin').addEventListener('click', async ()=>{
+  const btn = document.getElementById('btn-migrate-builtin');
+  btn.disabled = true;
+  btn.textContent = '가져오는 중...';
+  let added = 0;
+  for(const item of SEED_FOODS){
+    const exists = state.customFoods.some(f => f.brand===item.brand && f.name===item.name);
+    if(exists) continue;
+    const ok = await addFoodToCatalog({brand:item.brand, name:item.name, type:item.type, kcal:item.kcal, packSize:null, packKcal:null, imageUrl:null});
+    if(ok) added++;
+  }
+  btn.disabled = false;
+  btn.textContent = '기본 제공 사료 가져오기';
+  showToast(added>0 ? `기본 사료 ${added}개를 사냥터로 가져왔어요` : '이미 모두 가져왔어요');
+});
 document.getElementById('btn-save-food').addEventListener('click', async ()=>{
   const brand = document.getElementById('food-brand').value.trim();
   const name = document.getElementById('food-name').value.trim();
