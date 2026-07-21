@@ -1,0 +1,1179 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>냥장고를 부탁해</title>
+<style>
+  :root{
+    --bg:#F3EEE1;
+    --surface:#FFFFFF;
+    --ink:#2B2622;
+    --ink-soft:#7A7060;
+    --line:#DDD3BC;
+    --line-soft:#EAE3D2;
+    --coral:#E2694F;
+    --coral-soft:#F5DCD4;
+    --moss:#748456;
+    --moss-soft:#E3E8D6;
+    --mustard:#D6A23C;
+    --mustard-soft:#F5E6C4;
+    --sky:#5B84A8;
+    --sky-soft:#DCE6EE;
+    --shadow: 0 2px 0 rgba(43,38,34,0.06), 0 8px 20px -12px rgba(43,38,34,0.18);
+    --radius: 14px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  button, .chip, .activity-opt, .food-pick, .add-cat-card, .cat-photo, input, select, textarea{touch-action:manipulation;}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'Pretendard','Apple SD Gothic Neo','Malgun Gothic',-apple-system,BlinkMacSystemFont,sans-serif;
+    -webkit-font-smoothing:antialiased;
+    min-height:100vh;
+    background-image: radial-gradient(circle at 1px 1px, rgba(43,38,34,0.035) 1px, transparent 0);
+    background-size: 18px 18px;
+  }
+  .wrap{max-width:480px;margin:0 auto;padding:20px 16px 90px;}
+  @media(min-width:720px){ .wrap{max-width:900px;padding:32px 28px 100px;} }
+
+  /* ---------- Header ---------- */
+  header.app{
+    display:flex;align-items:flex-end;justify-content:space-between;
+    margin-bottom:18px;padding-bottom:16px;border-bottom:2px solid var(--ink);
+    gap:10px;flex-wrap:wrap;
+  }
+  .brand{display:flex;align-items:center;gap:10px;}
+  .brand .mark{
+    width:40px;height:40px;border-radius:50%;background:var(--coral);
+    display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:var(--shadow);
+  }
+  .brand .mark svg{width:23px;height:23px;}
+  .brand h1{font-size:20px;margin:0;letter-spacing:-0.02em;font-weight:800;}
+  .brand p{margin:2px 0 0;font-size:11.5px;color:var(--ink-soft);}
+  .stamp{font-size:10.5px;color:var(--ink-soft);border:1px solid var(--line);padding:5px 10px;border-radius:20px;white-space:nowrap;}
+
+  /* ---------- Tabs ---------- */
+  nav.tabs{display:flex;gap:6px;margin-bottom:18px;overflow-x:auto;padding-bottom:2px;-webkit-overflow-scrolling:touch;}
+  nav.tabs::-webkit-scrollbar{display:none;}
+  nav.tabs button{
+    font-family:inherit;font-size:13px;font-weight:700;color:var(--ink-soft);
+    background:var(--line-soft);border:none;padding:10px 14px 9px;white-space:nowrap;flex-shrink:0;
+    border-radius:10px 10px 0 0;cursor:pointer;position:relative;top:2px;
+    border-bottom:2px solid transparent;transition:all .15s ease;
+  }
+  nav.tabs button:hover{color:var(--ink);}
+  nav.tabs button.active{background:var(--surface);color:var(--ink);border-bottom:2px solid var(--coral);box-shadow:0 -2px 8px rgba(43,38,34,0.05);}
+
+  section.panel{display:none;}
+  section.panel.active{display:block;animation:fade .25s ease;}
+  @keyframes fade{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:translateY(0);}}
+
+  .card{background:var(--surface);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow);border:1px solid var(--line-soft);}
+  h2.section-title{font-size:15.5px;margin:0 0 4px;font-weight:800;}
+  p.section-sub{font-size:12px;color:var(--ink-soft);margin:0 0 14px;line-height:1.5;}
+
+  .btn{font-family:inherit;font-weight:700;font-size:13px;border-radius:9px;padding:10px 16px;border:none;cursor:pointer;transition:transform .1s ease, opacity .15s ease;display:inline-flex;align-items:center;justify-content:center;gap:6px;}
+  .btn:active{transform:scale(0.97);}
+  .btn-primary{background:var(--ink);color:#fff;}
+  .btn-primary:hover{opacity:0.88;}
+  .btn-coral{background:var(--coral);color:#fff;}
+  .btn-coral:hover{opacity:0.88;}
+  .btn-ghost{background:transparent;color:var(--ink-soft);border:1px solid var(--line);}
+  .btn-ghost:hover{color:var(--ink);border-color:var(--ink-soft);}
+  .btn-sm{padding:7px 12px;font-size:12px;}
+  .btn-block{width:100%;}
+  .btn:disabled{opacity:0.4;cursor:not-allowed;}
+  .btn-icon{background:transparent;border:none;cursor:pointer;color:var(--ink-soft);padding:4px;}
+  .btn-icon:hover{color:var(--coral);}
+
+  /* ---------- Onboarding ---------- */
+  #onboarding{min-height:100vh;min-height:100svh;display:flex;align-items:center;justify-content:center;padding:24px 18px;overflow-y:auto;}
+  #login-gate{min-height:100vh;min-height:100svh;display:flex;align-items:center;justify-content:center;padding:24px 18px;overflow-y:auto;}
+  #login-gate .btn-coral{background:#fff;color:var(--ink);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;gap:8px;}
+  #login-gate .btn-coral:hover{opacity:0.85;}
+  .ob-card{background:var(--surface);border-radius:20px;padding:28px 22px;max-width:420px;width:100%;box-shadow:var(--shadow);}
+  .ob-dots{display:flex;gap:6px;justify-content:center;margin-bottom:18px;}
+  .ob-dots span{width:7px;height:7px;border-radius:50%;background:var(--line);}
+  .ob-dots span.on{background:var(--coral);width:18px;border-radius:5px;transition:all .2s ease;}
+  .ob-emblem{width:56px;height:56px;border-radius:50%;background:var(--coral);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;box-shadow:var(--shadow);}
+  .ob-emblem svg{width:32px;height:32px;}
+  .ob-card h2{text-align:center;font-size:20px;margin:0 0 8px;font-weight:800;}
+  .ob-card p.ob-desc{text-align:center;font-size:13px;color:var(--ink-soft);line-height:1.6;margin:0 0 22px;}
+  .ob-step{display:none;}
+  .ob-step.active{display:block;animation:fade .25s ease;}
+  .ob-result{background:var(--ink);color:#fff;border-radius:14px;padding:20px;text-align:center;margin:16px 0;}
+  .ob-result .num{font-size:34px;font-weight:800;font-variant-numeric:tabular-nums;}
+  .ob-result .unit{font-size:12px;opacity:0.7;margin-top:2px;}
+
+  /* ---------- Cat cards ---------- */
+  .cat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;margin-bottom:14px;}
+  @media(min-width:720px){ .cat-grid{grid-template-columns:repeat(auto-fill,minmax(180px,1fr));} }
+  .cat-card{background:var(--surface);border:1px solid var(--line-soft);border-radius:var(--radius);padding:14px;box-shadow:var(--shadow);text-align:center;position:relative;}
+  .cat-photo{width:68px;height:68px;border-radius:50%;background:var(--moss-soft);margin:0 auto 8px;display:flex;align-items:center;justify-content:center;overflow:hidden;border:3px solid var(--surface);outline:2px solid var(--line);font-size:24px;}
+  .cat-photo img{width:100%;height:100%;object-fit:cover;}
+  .cat-card h3{margin:0 0 2px;font-size:14px;font-weight:800;}
+  .cat-card .meta{font-size:11.5px;color:var(--ink-soft);line-height:1.6;}
+  .cat-card .tag{display:inline-block;font-size:10px;background:var(--coral-soft);color:var(--coral);padding:2px 8px;border-radius:20px;margin-top:5px;font-weight:700;}
+  .cat-card .card-actions{position:absolute;top:8px;right:8px;display:flex;gap:0;}
+  .add-cat-card{display:flex;align-items:center;justify-content:center;flex-direction:column;gap:6px;border:2px dashed var(--line);border-radius:var(--radius);min-height:140px;cursor:pointer;color:var(--ink-soft);font-weight:700;font-size:12.5px;background:transparent;}
+  .add-cat-card:hover{border-color:var(--coral);color:var(--coral);}
+
+  /* ---------- Forms ---------- */
+  .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  @media(max-width:420px){ .form-grid{grid-template-columns:1fr;} }
+  .field{margin-bottom:12px;}
+  .field.full{grid-column:1/-1;}
+  .field label{display:block;font-size:12px;font-weight:700;color:var(--ink-soft);margin-bottom:5px;}
+  .field input, .field select, .field textarea{width:100%;font-family:inherit;font-size:16px;padding:10px 11px;border:1px solid var(--line);border-radius:8px;background:#FCFAF5;color:var(--ink);}
+  .field input:focus, .field select:focus, .field textarea:focus{outline:2px solid var(--coral-soft);border-color:var(--coral);}
+  .field textarea{resize:vertical;min-height:60px;}
+  .field .hint{font-size:11px;color:var(--ink-soft);margin-top:4px;}
+  .photo-upload{display:flex;align-items:center;gap:10px;}
+  .photo-upload .preview{width:52px;height:52px;border-radius:50%;background:var(--moss-soft);flex-shrink:0;overflow:hidden;display:flex;align-items:center;justify-content:center;}
+  .photo-upload .preview img{width:100%;height:100%;object-fit:cover;}
+
+  /* ---------- Modal (mobile bottom-sheet -> desktop centered) ---------- */
+  .modal-backdrop{display:none;position:fixed;inset:0;background:rgba(43,38,34,0.45);align-items:flex-end;justify-content:center;z-index:50;}
+  .modal-backdrop.active{display:flex;}
+  .modal{background:var(--surface);border-radius:18px 18px 0 0;padding:20px;width:100%;max-height:90vh;overflow-y:auto;box-shadow:0 -10px 40px rgba(0,0,0,0.2);}
+  @media(min-width:640px){
+    .modal-backdrop{align-items:center;padding:20px;}
+    .modal{border-radius:16px;max-width:460px;box-shadow:0 20px 50px rgba(0,0,0,0.25);}
+  }
+  .modal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;}
+  .modal-head h3{margin:0;font-size:16px;font-weight:800;}
+  .modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:16px;}
+
+  /* ---------- Catalog (사냥터) ---------- */
+  .catalog-controls{display:flex;gap:10px;margin-bottom:12px;flex-wrap:wrap;align-items:center;}
+  .search-box{flex:1;min-width:160px;position:relative;}
+  .search-box input{width:100%;padding:9px 12px 9px 34px;border:1px solid var(--line);border-radius:9px;font-family:inherit;font-size:16px;background:#FCFAF5;}
+  .search-box::before{content:"⌕";position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--ink-soft);font-size:15px;}
+  .chip-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;overflow-x:auto;}
+  .chip{font-size:11.5px;font-weight:700;padding:6px 12px;border-radius:20px;border:1px solid var(--line);background:var(--surface);cursor:pointer;color:var(--ink-soft);white-space:nowrap;}
+  .chip.active{background:var(--ink);color:#fff;border-color:var(--ink);}
+  .food-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;}
+  .food-card{background:var(--surface);border:1px solid var(--line-soft);border-radius:12px;padding:14px;box-shadow:var(--shadow);}
+  .food-card .type-tag{display:inline-block;font-size:10px;font-weight:800;padding:2px 8px;border-radius:20px;margin-bottom:8px;}
+  .type-dry{background:var(--mustard-soft);color:#93701F;}
+  .type-wet{background:var(--moss-soft);color:#4E5C34;}
+  .type-treat{background:var(--coral-soft);color:var(--coral);}
+  .type-freeze{background:var(--sky-soft);color:var(--sky);}
+  .food-card h4{margin:0 0 2px;font-size:13.5px;font-weight:800;}
+  .food-card .brand{font-size:11.5px;color:var(--ink-soft);margin-bottom:8px;}
+  .food-card .kcal{font-size:12px;color:var(--ink-soft);margin-bottom:10px;font-variant-numeric:tabular-nums;}
+  .food-card .kcal b{color:var(--ink);font-weight:800;}
+  .no-food-cta{grid-column:1/-1;text-align:center;padding:24px 14px;border:1.5px dashed var(--line);border-radius:12px;color:var(--ink-soft);font-size:12.5px;}
+  .no-food-cta button{margin-top:10px;}
+
+  /* ---------- 냥장고(archive) ---------- */
+  .entry-filter{display:flex;gap:8px;margin-bottom:12px;align-items:center;flex-wrap:wrap;}
+  .entry-list{display:flex;flex-direction:column;gap:10px;}
+  .entry-card{background:var(--surface);border:1px solid var(--line-soft);border-radius:12px;padding:14px 15px;box-shadow:var(--shadow);display:flex;gap:12px;position:relative;border-left:4px solid var(--coral);}
+  .entry-card .avatar{width:38px;height:38px;border-radius:50%;background:var(--moss-soft);flex-shrink:0;overflow:hidden;display:flex;align-items:center;justify-content:center;}
+  .entry-card .avatar img{width:100%;height:100%;object-fit:cover;}
+  .entry-body{flex:1;min-width:0;}
+  .entry-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;flex-wrap:wrap;}
+  .entry-top h4{margin:0;font-size:14px;font-weight:800;}
+  .entry-date{font-size:10.5px;color:var(--ink-soft);font-variant-numeric:tabular-nums;white-space:nowrap;}
+  .entry-sub{font-size:11px;color:var(--ink-soft);margin:2px 0 8px;}
+  .paw-rating{display:flex;gap:3px;margin-bottom:6px;}
+  .paw-rating svg{width:16px;height:16px;}
+  .entry-note{font-size:12.5px;color:var(--ink);line-height:1.5;background:#FBF8F1;padding:8px 10px;border-radius:8px;}
+  .entry-actions{display:flex;flex-direction:column;gap:2px;}
+  .empty-state{text-align:center;padding:34px 16px;color:var(--ink-soft);font-size:12.5px;}
+  .empty-state .paw-big{width:34px;height:34px;opacity:0.35;margin-bottom:10px;}
+
+  /* ---------- 칼로리계산 (통합 스텝형) ---------- */
+  .calc-step{margin-bottom:16px;}
+  .calc-step-label{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
+  .calc-step-num{width:20px;height:20px;border-radius:50%;background:var(--ink);color:#fff;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .calc-step-title{font-size:13.5px;font-weight:800;}
+  .activity-options{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px;}
+  @media(max-width:420px){ .activity-options{grid-template-columns:1fr;} }
+  .activity-opt{border:1px solid var(--line);border-radius:9px;padding:9px 11px;cursor:pointer;font-size:12.5px;}
+  .activity-opt.selected{border-color:var(--coral);background:var(--coral-soft);}
+  .activity-opt b{display:block;font-size:12.5px;margin-bottom:1px;}
+  .activity-opt span{color:var(--ink-soft);font-size:11px;}
+  .result-box{background:var(--ink);color:#fff;border-radius:14px;padding:20px;text-align:center;margin-top:4px;}
+  .result-box .num{font-size:36px;font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:-0.02em;}
+  .result-box .unit{font-size:12.5px;opacity:0.7;margin-top:2px;}
+  .result-box .sub{font-size:11.5px;opacity:0.6;margin-top:10px;border-top:1px solid rgba(255,255,255,0.15);padding-top:10px;}
+  .feed-compare{margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.15);}
+  .feed-compare .row{display:flex;justify-content:space-between;font-size:12.5px;padding:3px 0;}
+  .feed-bar{height:8px;border-radius:5px;background:rgba(255,255,255,0.15);margin:8px 0 4px;overflow:hidden;}
+  .feed-bar-fill{height:100%;border-radius:5px;background:var(--mustard);transition:width .3s ease;}
+  .feed-status{font-size:11.5px;font-weight:800;margin-top:2px;}
+
+  .food-pick-list{display:flex;flex-direction:column;gap:8px;margin-top:2px;max-height:240px;overflow-y:auto;}
+  .food-pick{display:flex;justify-content:space-between;align-items:center;padding:9px 12px;border:1px solid var(--line);border-radius:9px;cursor:pointer;font-size:13px;}
+  .food-pick.selected{border-color:var(--moss);background:var(--moss-soft);}
+  .food-pick .kcal-tag{font-size:11px;color:var(--ink-soft);font-variant-numeric:tabular-nums;flex-shrink:0;}
+  .feed-input-row{display:flex;gap:10px;margin-top:10px;}
+  .feed-input-row .field{flex:1;margin-bottom:0;}
+  .food-feed-row{padding:12px 0;border-top:1px solid var(--line-soft);}
+  .food-feed-row:first-child{border-top:none;padding-top:0;}
+  .food-feed-row-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:2px;}
+  .food-feed-row-head .name{font-size:13px;font-weight:700;}
+  .food-feed-row-head .kcal-tag{font-size:11px;color:var(--ink-soft);}
+  .food-feed-kcal{font-size:12px;color:var(--moss);font-weight:700;margin-top:6px;padding-top:6px;border-top:1px dashed var(--line-soft);}
+  .food-feed-kcal b{font-size:13px;}
+
+  select.small{width:auto;display:inline-block;}
+  .muted{color:var(--ink-soft);}
+  .hidden{display:none !important;}
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(10px);background:var(--ink);color:#fff;padding:10px 18px;border-radius:30px;font-size:13px;font-weight:700;opacity:0;pointer-events:none;transition:all .25s ease;z-index:100;box-shadow:0 10px 30px rgba(0,0,0,0.25);}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+</style>
+</head>
+<body>
+
+<!-- ============ LOGIN GATE ============ -->
+<div id="login-gate">
+  <div class="ob-card">
+    <div class="ob-emblem"><svg viewBox="0 0 24 24" fill="none"><path d="M12 21c-3.5 0-7-2.2-7-6.2 0-2.6 1.4-4.3 2.3-5.7C8 7.7 8.2 6 7 4c2 .3 3.4 1.5 4.2 2.7A6.6 6.6 0 0 1 12 6.5c.3 0 .6 0 .8.2C13.6 5.5 15 4.3 17 4c-1.2 2-1 3.7.7 5.1.9 1.4 2.3 3.1 2.3 5.7 0 4-3.5 6.2-8 6.2Z" fill="#fff"/></svg></div>
+    <h2>냥장고를 부탁해</h2>
+    <p class="ob-desc">구글 계정으로 로그인하면<br>PC와 모바일 어디서든 같은 냥장고를 볼 수 있어요.</p>
+    <button class="btn btn-coral btn-block" id="btn-google-login">
+      <svg width="16" height="16" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.6 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.6 6.1 29.6 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.7-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.5 16 18.9 13 24 13c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.6 6.1 29.6 4 24 4c-7.7 0-14.4 4.3-17.7 10.7z"/><path fill="#4CAF50" d="M24 44c5.5 0 10.4-1.9 14.3-5.1l-6.6-5.6C29.6 35.4 27 36 24 36c-5.3 0-9.7-3.4-11.3-8.1l-6.6 5.1C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.3-2.3 4.2-4.2 5.5l6.6 5.6C41.4 36 44 30.5 44 24c0-1.3-.1-2.7-.4-3.5z"/></svg>
+      Google로 시작하기
+    </button>
+  </div>
+</div>
+
+<!-- ============ ONBOARDING ============ -->
+<div id="onboarding" class="hidden">
+  <div class="ob-card">
+    <div class="ob-dots"><span id="dot-0" class="on"></span><span id="dot-1"></span><span id="dot-2"></span></div>
+
+    <div class="ob-step active" id="ob-step-0">
+      <div class="ob-emblem"><svg viewBox="0 0 24 24" fill="none"><path d="M12 21c-3.5 0-7-2.2-7-6.2 0-2.6 1.4-4.3 2.3-5.7C8 7.7 8.2 6 7 4c2 .3 3.4 1.5 4.2 2.7A6.6 6.6 0 0 1 12 6.5c.3 0 .6 0 .8.2C13.6 5.5 15 4.3 17 4c-1.2 2-1 3.7.7 5.1.9 1.4 2.3 3.1 2.3 5.7 0 4-3.5 6.2-8 6.2Z" fill="#fff"/></svg></div>
+      <h2>냥장고를 부탁해</h2>
+      <p class="ob-desc">우리 냥이 입맛에 맞는 사료를 찾아서<br>나만의 냥장고에 차곡차곡 모아보세요.</p>
+      <button class="btn btn-coral btn-block" onclick="obGoto(1)">시작하기</button>
+    </div>
+
+    <div class="ob-step" id="ob-step-1">
+      <h2 style="font-size:17px;">우리 냥이를 소개해주세요</h2>
+      <p class="ob-desc" style="margin-bottom:16px;">등록해두면 칼로리 계산에 자동으로 연결돼요.</p>
+      <div class="field">
+        <label>프로필 사진</label>
+        <div class="photo-upload">
+          <div class="preview" id="ob-photo-preview">🐾</div>
+          <input type="file" accept="image/*" id="ob-photo-input">
+        </div>
+      </div>
+      <div class="field"><label>이름</label><input type="text" id="ob-name" placeholder="예: 두부"></div>
+      <div class="form-grid">
+        <div class="field"><label>생년월일</label><input type="date" id="ob-birth"></div>
+        <div class="field"><label>체중 (kg)</label><input type="number" id="ob-weight" step="0.1" min="0.1" placeholder="예: 4.2"></div>
+      </div>
+      <div class="field"><label>중성화 여부</label><select id="ob-neutered"><option value="yes">중성화함</option><option value="no">안함</option></select></div>
+      <div style="display:flex;gap:8px;margin-top:6px;">
+        <button class="btn btn-ghost" onclick="obGoto(0)">이전</button>
+        <button class="btn btn-coral btn-block" onclick="obSaveCatAndGoto2()">다음</button>
+      </div>
+    </div>
+
+    <div class="ob-step" id="ob-step-2">
+      <h2 style="font-size:17px;">하루 필요 칼로리를 계산해요</h2>
+      <p class="ob-desc" style="margin-bottom:10px;">활동성과 중성화 여부를 선택하면 바로 알려드려요.</p>
+      <div class="activity-options" id="ob-activity-options"></div>
+      <div class="ob-result" id="ob-result" style="display:none;">
+        <div class="num" id="ob-der-value">0</div>
+        <div class="unit">kcal / 일 (일일 필요 칼로리)</div>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:14px;">
+        <button class="btn btn-ghost" onclick="obGoto(1)">이전</button>
+        <button class="btn btn-primary btn-block" onclick="finishOnboarding()">냥장고 시작하기</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MAIN APP ============ -->
+<div class="wrap hidden" id="main-app">
+
+  <header class="app">
+    <div class="brand">
+      <div class="mark"><svg viewBox="0 0 24 24" fill="none"><path d="M12 21c-3.5 0-7-2.2-7-6.2 0-2.6 1.4-4.3 2.3-5.7C8 7.7 8.2 6 7 4c2 .3 3.4 1.5 4.2 2.7A6.6 6.6 0 0 1 12 6.5c.3 0 .6 0 .8.2C13.6 5.5 15 4.3 17 4c-1.2 2-1 3.7.7 5.1.9 1.4 2.3 3.1 2.3 5.7 0 4-3.5 6.2-8 6.2Z" fill="#fff"/><circle cx="9.3" cy="13.5" r="1" fill="#E2694F"/><circle cx="14.7" cy="13.5" r="1" fill="#E2694F"/></svg></div>
+      <div><h1>냥장고를 부탁해</h1><p>입맛에 맞는 사료를 냥장고에 모아요</p></div>
+    </div>
+    <div class="stamp" id="cat-count-stamp">냥이 0마리 · 냥장고 0건</div>
+    <button class="btn-icon" id="btn-logout" title="로그아웃" style="border:1px solid var(--line);border-radius:20px;font-size:11px;padding:5px 10px;">로그아웃</button>
+  </header>
+
+  <nav class="tabs">
+    <button data-tab="profile" class="active">프로필관리</button>
+    <button data-tab="hunt">사냥터</button>
+    <button data-tab="fridge">냥장고</button>
+    <button data-tab="calc">칼로리계산</button>
+  </nav>
+
+  <!-- PROFILE -->
+  <section class="panel active" id="panel-profile">
+    <h2 class="section-title">내 고양이</h2>
+    <p class="section-sub">기본 정보를 등록해두면 칼로리 계산과 냥장고 기록에 자동으로 연결돼요.</p>
+    <div class="cat-grid" id="cat-grid"></div>
+  </section>
+
+  <!-- HUNT (사냥터, ex-카탈로그) -->
+  <section class="panel" id="panel-hunt">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px;">
+      <div>
+        <h2 class="section-title">사냥터</h2>
+        <p class="section-sub">시중 사료를 탐색하고, 우리 냥이가 시도해본 사료는 냥장고에 담아 기록해보세요.</p>
+      </div>
+      <button class="btn btn-ghost btn-sm" id="btn-add-food">+ 새 사료 등록</button>
+    </div>
+    <div class="catalog-controls"><div class="search-box"><input type="text" id="food-search" placeholder="사료명 또는 브랜드 검색"></div></div>
+    <div class="chip-row" id="brand-chips"></div>
+    <div class="chip-row" id="type-chips">
+      <button class="chip active" data-type="all">전체</button>
+      <button class="chip" data-type="dry">건식</button>
+      <button class="chip" data-type="wet">습식</button>
+      <button class="chip" data-type="freeze">에어/동결</button>
+      <button class="chip" data-type="treat">간식</button>
+    </div>
+    <div class="food-grid" id="food-grid"></div>
+    <p class="section-sub" style="margin-top:16px;">※ 칼로리 값은 참고용 예시입니다(일부는 실제 제품 표기 기준). 급여 전 제품 라벨의 정확한 kcal 값으로 등록·수정해서 사용하세요.</p>
+  </section>
+
+  <!-- FRIDGE (냥장고, ex-내도록) -->
+  <section class="panel" id="panel-fridge">
+    <h2 class="section-title">냥장고</h2>
+    <p class="section-sub">우리 냥이가 시도해본 사료의 기호성 기록이 여기 쌓여요.</p>
+    <div class="entry-filter">
+      <label class="muted" style="font-size:12px;">고양이별 보기</label>
+      <select id="entry-cat-filter" class="small"><option value="all">전체</option></select>
+      <label class="muted" style="font-size:12px;margin-left:8px;">정렬</label>
+      <select id="entry-sort" class="small">
+        <option value="date-desc">최신순</option>
+        <option value="date-asc">오래된순</option>
+        <option value="score-desc">기호성 높은순</option>
+        <option value="score-asc">기호성 낮은순</option>
+      </select>
+    </div>
+    <div class="entry-list" id="entry-list"></div>
+  </section>
+
+  <!-- CALC (통합 칼로리 계산) -->
+  <section class="panel" id="panel-calc">
+    <h2 class="section-title">칼로리 계산</h2>
+    <p class="section-sub">일일 필요 칼로리를 구하고, 이어서 냥장고 사료로 실제 급여 칼로리까지 비교해보세요.</p>
+
+    <div class="card calc-step">
+      <div class="calc-step-label"><span class="calc-step-num">1</span><span class="calc-step-title">일일 필요 칼로리 계산</span></div>
+      <div class="field"><label>고양이 선택</label><select id="c-cat-select"><option value="">직접 입력</option></select></div>
+      <div class="field"><label>체중 (kg)</label><input type="number" id="c-weight" step="0.1" min="0.1" placeholder="예: 4.2"></div>
+      <div class="field"><label>활동성 / 상태 선택</label><div class="activity-options" id="c-activity-options"></div></div>
+      <button class="btn btn-coral btn-block" id="btn-calc-der">계산하기</button>
+
+      <div class="result-box hidden" id="der-result">
+        <div class="num" id="c-der-value">0</div>
+        <div class="unit">kcal / 일 (일일 필요 칼로리)</div>
+        <div class="sub" id="c-rer-sub"></div>
+        <div class="feed-compare hidden" id="feed-compare">
+          <div class="row"><span>현재 급여 칼로리</span><b id="feed-kcal-value">0 kcal</b></div>
+          <div class="feed-bar"><div class="feed-bar-fill" id="feed-bar-fill" style="width:0%;"></div></div>
+          <div class="feed-status" id="feed-status"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card calc-step hidden" id="step2-toggle-wrap">
+      <button class="btn btn-ghost btn-block" id="btn-toggle-food-calc">사료로 계산하기 ▾</button>
+    </div>
+
+    <div class="card calc-step hidden" id="step2-card">
+      <div class="calc-step-label"><span class="calc-step-num">2</span><span class="calc-step-title">냥장고에서 사료 선택 (여러 개 가능)</span></div>
+      <p class="section-sub" style="margin-bottom:8px;">건식+습식처럼 혼합 급여하는 사료를 모두 선택해보세요.</p>
+      <div class="food-pick-list" id="c-food-list"></div>
+    </div>
+
+    <div class="card calc-step hidden" id="step3-card">
+      <div class="calc-step-label"><span class="calc-step-num">3</span><span class="calc-step-title">사료별 하루 급여량 입력</span></div>
+      <div id="step3-food-rows"></div>
+    </div>
+  </section>
+
+</div>
+
+<!-- Modals -->
+<div class="modal-backdrop" id="modal-cat">
+  <div class="modal">
+    <div class="modal-head"><h3 id="cat-modal-title">냥이 등록하기</h3><button class="btn-icon" onclick="closeModal('modal-cat')">✕</button></div>
+    <input type="hidden" id="cat-edit-id">
+    <div class="field">
+      <label>프로필 사진</label>
+      <div class="photo-upload"><div class="preview" id="cat-photo-preview">🐾</div><input type="file" accept="image/*" id="cat-photo-input"></div>
+    </div>
+    <div class="field"><label>이름</label><input type="text" id="cat-name" placeholder="예: 두부"></div>
+    <div class="form-grid">
+      <div class="field"><label>생년월일</label><input type="date" id="cat-birth"></div>
+      <div class="field"><label>체중 (kg)</label><input type="number" id="cat-weight" step="0.1" min="0.1" placeholder="예: 4.2"></div>
+    </div>
+    <div class="field"><label>중성화 여부</label><select id="cat-neutered"><option value="yes">중성화함</option><option value="no">안함</option></select></div>
+    <div class="field full"><label>메모 (선택)</label><textarea id="cat-memo" placeholder="특이사항, 알레르기 등"></textarea></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('modal-cat')">취소</button>
+      <button class="btn btn-primary" id="btn-save-cat">저장</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="modal-food">
+  <div class="modal">
+    <div class="modal-head"><h3>새 사료 등록</h3><button class="btn-icon" onclick="closeModal('modal-food')">✕</button></div>
+    <div class="field"><label>브랜드</label><input type="text" id="food-brand" placeholder="예: 로얄캐닌"></div>
+    <div class="field"><label>제품명</label><input type="text" id="food-name" placeholder="예: 인도어 어덜트"></div>
+    <div class="field"><label>종류</label>
+      <select id="food-type"><option value="dry">건식</option><option value="wet">습식</option><option value="freeze">에어/동결</option><option value="treat">간식</option></select>
+    </div>
+    <div class="field">
+      <label>칼로리 입력 기준</label>
+      <div class="chip-row" style="margin-bottom:0;">
+        <button type="button" class="chip active" id="basis-100" data-basis="100">100g 기준</button>
+        <button type="button" class="chip" id="basis-pack" data-basis="pack">캔·포장 전체 기준</button>
+      </div>
+    </div>
+    <div id="food-basis-100-fields">
+      <div class="field"><label>칼로리 (kcal/100g)</label><input type="number" id="food-kcal" step="1" placeholder="예: 370"></div>
+    </div>
+    <div id="food-basis-pack-fields" class="hidden">
+      <div class="form-grid">
+        <div class="field"><label>포장 총 중량 (g)</label><input type="number" id="food-pack-size" step="1" placeholder="예: 185"></div>
+        <div class="field"><label>포장 1개당 칼로리 (kcal)</label><input type="number" id="food-pack-kcal" step="1" placeholder="예: 172"></div>
+      </div>
+      <div class="field" id="food-pack-preview" style="font-size:12px;color:var(--ink-soft);"></div>
+    </div>
+    <p class="hint" style="margin-top:-6px;">캔 뒷면에 적힌 그대로(포장중량·포장당 kcal) 입력하면 100g 기준으로 자동 환산돼서 급여량 계산에 그대로 쓰여요.</p>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('modal-food')">취소</button>
+      <button class="btn btn-primary" id="btn-save-food">등록</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="modal-entry">
+  <div class="modal">
+    <div class="modal-head"><h3 id="entry-modal-title">기호성 기록 남기기</h3><button class="btn-icon" onclick="closeModal('modal-entry')">✕</button></div>
+    <input type="hidden" id="entry-edit-id">
+    <div class="field" id="entry-food-display"></div>
+    <div class="field"><label>어떤 냥이가 먹었나요?</label><select id="entry-cat-select"></select></div>
+    <div class="field"><label>기호성 점수</label><div class="paw-rating" id="entry-paw-input" style="cursor:pointer;"></div></div>
+    <div class="field full"><label>의견 (선택)</label><textarea id="entry-note" placeholder="예: 처음엔 안 먹더니 데워주니 잘 먹음"></textarea></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('modal-entry')">취소</button>
+      <button class="btn btn-primary" id="btn-save-entry">냥장고에 넣기</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script>
+/* ---------------- Data & Storage ---------------- */
+const ACTIVITY_LEVELS = [
+  {id:'kitten-young', label:'아깽이 (~4개월)', factor:3.0, desc:'폭풍 성장기'},
+  {id:'kitten-old', label:'아깽이 (4~12개월)', factor:2.5, desc:'성장기'},
+  {id:'neutered', label:'성묘 · 중성화', factor:1.2, desc:'표준 활동'},
+  {id:'intact', label:'성묘 · 비중성화', factor:1.4, desc:'표준 활동'},
+  {id:'diet', label:'체중 감량 필요', factor:1.0, desc:'다이어트'},
+  {id:'gain', label:'체중 증가 필요', factor:1.8, desc:'저체중 개선'},
+  {id:'senior', label:'노묘 (7세 이상)', factor:1.1, desc:'활동량 감소'},
+];
+
+const BUILTIN_FOODS = [
+  {id:'b1', brand:'로얄캐닌', name:'인도어 어덜트', type:'dry', kcal:370, builtin:true},
+  {id:'b2', brand:'로얄캐닌', name:'헤어볼 케어', type:'dry', kcal:365, builtin:true},
+  {id:'b3', brand:'힐스', name:'사이언스 다이어트 어덜트', type:'dry', kcal:355, builtin:true},
+  {id:'b4', brand:'힐스', name:'i/d 소화기 케어 캔', type:'wet', kcal:95, builtin:true},
+  {id:'b5', brand:'퓨리나 원', name:'인도어 어드밴티지', type:'dry', kcal:360, builtin:true},
+  {id:'b6', brand:'오리젠', name:'오리지널 캣', type:'dry', kcal:400, builtin:true},
+  {id:'b7', brand:'아카나', name:'와일드 프레리 캣', type:'dry', kcal:395, builtin:true},
+  {id:'b9', brand:'이나바', name:'챠오츄르 참치', type:'treat', kcal:60, builtin:true},
+  {id:'b10', brand:'웰니스', name:'컴플리트 헬스 캔', type:'wet', kcal:90, builtin:true},
+  {id:'b11', brand:'나우프레시', name:'그레인프리 어덜트', type:'dry', kcal:378, builtin:true},
+  {id:'b12', brand:'캐년', name:'그레인프리 캣', type:'dry', kcal:390, builtin:true},
+  {id:'f1', brand:'지위픽', name:'에어드라이 고등어&양고기', type:'freeze', kcal:480, builtin:true},
+  {id:'f2', brand:'지위픽', name:'에어드라이 양고기', type:'freeze', kcal:560, builtin:true},
+  {id:'f3', brand:'지위픽', name:'에어드라이 소고기', type:'freeze', kcal:550, builtin:true},
+  {id:'f4', brand:'스텔라앤츄이스', name:'동결건조 디너모젤 살몬&대구', type:'freeze', kcal:450, builtin:true},
+  {id:'f5', brand:'프라이멀', name:'동결건조 너겟 치킨', type:'freeze', kcal:470, builtin:true},
+];
+
+let state = { cats: [], customFoods: [], entries: [] };
+let catalogFilter = { type:'all', brand:'all', q:'' };
+let entryPawTemp = 3;
+let obActivitySelected = 'neutered';
+let foodBasis = '100';
+let calcState = { der:null, catId:'', weight:null, activity:null, selectedFoods:{} };
+window.addEventListener('error', (e)=>{
+  try{ showToast('오류: ' + (e.message||'알 수 없는 오류')); }catch(_){}
+});
+
+/* ---------------- Firebase Auth + Firestore ---------------- */
+const firebaseConfig = {
+  apiKey: "AIzaSyBGDgOV8AZ3zuZVzSgWEXyi41wR91aoJyw",
+  authDomain: "my-cat-food.firebaseapp.com",
+  projectId: "my-cat-food",
+  storageBucket: "my-cat-food.firebasestorage.app",
+  messagingSenderId: "519476609008",
+  appId: "1:519476609008:web:c223edf99c4782dcc0e735"
+};
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+let currentUser = null;
+
+document.getElementById('btn-google-login').addEventListener('click', async ()=>{
+  const provider = new firebase.auth.GoogleAuthProvider();
+  try{
+    await auth.signInWithPopup(provider);
+  }catch(e){
+    console.error('login failed', e);
+    showToast('로그인에 실패했어요: ' + (e.message || e.code || ''));
+  }
+});
+document.getElementById('btn-logout').addEventListener('click', ()=> auth.signOut());
+
+auth.onAuthStateChanged(async (user)=>{
+  if(user){
+    currentUser = user;
+    document.getElementById('login-gate').classList.add('hidden');
+    await loadAll();
+  }else{
+    currentUser = null;
+    document.getElementById('onboarding').classList.add('hidden');
+    document.getElementById('main-app').classList.add('hidden');
+    document.getElementById('login-gate').classList.remove('hidden');
+  }
+});
+
+let catalogUnsub = null;
+
+async function loadAll(){
+  try{
+    const docSnap = await db.collection('users').doc(currentUser.uid).get();
+    if(docSnap.exists){
+      const data = docSnap.data();
+      state.cats = data.cats || [];
+      state.entries = data.entries || [];
+    }else{
+      state.cats = []; state.entries = [];
+    }
+  }catch(e){
+    console.error('loadAll failed', e);
+    showToast('데이터를 불러오지 못했어요: ' + (e.message || e.code || ''));
+    state.cats = []; state.entries = [];
+  }
+
+  // 사냥터(사료 카탈로그)는 전체 유저 공용 컬렉션을 실시간 구독해요.
+  if(catalogUnsub) catalogUnsub();
+  catalogUnsub = db.collection('catalogFoods').orderBy('createdAt','desc').onSnapshot((snap)=>{
+    state.customFoods = snap.docs.map(d=>({id:d.id, ...d.data()}));
+    renderCatalog();
+    renderFoodPickList();
+  }, (e)=>{
+    console.error('catalogFoods listen failed', e);
+    showToast('사냥터 데이터를 불러오지 못했어요: ' + (e.message || e.code || ''));
+  });
+
+  if(state.cats.length === 0){
+    document.getElementById('onboarding').classList.remove('hidden');
+    document.getElementById('main-app').classList.add('hidden');
+    renderObActivityOptions();
+  }else{
+    document.getElementById('onboarding').classList.add('hidden');
+    document.getElementById('main-app').classList.remove('hidden');
+    renderAll();
+  }
+}
+async function saveAll(){
+  if(!currentUser) return;
+  try{
+    await db.collection('users').doc(currentUser.uid).set({
+      cats: state.cats,
+      entries: state.entries,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    }, {merge:true});
+  }catch(e){
+    console.error('saveAll failed', e);
+    showToast('저장에 실패했어요. 네트워크 상태를 확인해주세요');
+  }
+}
+async function saveCats(){ await saveAll(); }
+async function saveEntries(){ await saveAll(); }
+async function addFoodToCatalog(food){
+  try{
+    await db.collection('catalogFoods').add({
+      ...food,
+      addedBy: currentUser.uid,
+      addedByName: currentUser.displayName || '익명 집사',
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    return true;
+  }catch(e){
+    console.error('addFoodToCatalog failed', e);
+    showToast('사료 등록에 실패했어요. 네트워크 상태를 확인해주세요');
+    return false;
+  }
+}
+
+function allFoods(){ return [...BUILTIN_FOODS, ...state.customFoods]; }
+function foodById(id){ return allFoods().find(f=>f.id===id); }
+function catById(id){ return state.cats.find(c=>c.id===id); }
+function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
+function escapeHtml(s){ return (s||'').replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+function showToast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),1800); }
+
+/* ---------------- Age from birthdate ---------------- */
+function ageLabel(birthStr){
+  if(!birthStr) return '나이 미상';
+  const b = new Date(birthStr); const now = new Date();
+  let years = now.getFullYear()-b.getFullYear();
+  let months = now.getMonth()-b.getMonth();
+  if(now.getDate() < b.getDate()) months--;
+  if(months<0){ years--; months+=12; }
+  if(years<=0) return `${Math.max(months,0)}개월`;
+  return months>0 ? `${years}세 ${months}개월` : `${years}세`;
+}
+function ageMonthsTotal(birthStr){
+  if(!birthStr) return null;
+  const b = new Date(birthStr); const now = new Date();
+  return (now.getFullYear()-b.getFullYear())*12 + (now.getMonth()-b.getMonth());
+}
+function suggestedActivity(cat){
+  const m = ageMonthsTotal(cat.birth);
+  if(m !== null && m <= 4) return 'kitten-young';
+  if(m !== null && m <= 12) return 'kitten-old';
+  if(m !== null && m >= 84) return 'senior';
+  return cat.neutered === 'yes' ? 'neutered' : 'intact';
+}
+
+/* ---------------- Paw SVG ---------------- */
+function pawSVG(filled){
+  const c = filled ? 'var(--coral)' : 'var(--line)';
+  return `<svg viewBox="0 0 24 24" fill="none"><path d="M12 21c-3.5 0-7-2.2-7-6.2 0-2.6 1.4-4.3 2.3-5.7C8 7.7 8.2 6 7 4c2 .3 3.4 1.5 4.2 2.7A6.6 6.6 0 0 1 12 6.5c.3 0 .6 0 .8.2C13.6 5.5 15 4.3 17 4c-1.2 2-1 3.7.7 5.1.9 1.4 2.3 3.1 2.3 5.7 0 4-3.5 6.2-8 6.2Z" fill="${c}"/></svg>`;
+}
+function pawRow(score){ let h=''; for(let i=1;i<=5;i++) h += pawSVG(i<=score); return h; }
+
+/* ---------------- Onboarding ---------------- */
+function obGoto(step){
+  document.querySelectorAll('.ob-step').forEach(s=>s.classList.remove('active'));
+  document.getElementById('ob-step-'+step).classList.add('active');
+  document.querySelectorAll('.ob-dots span').forEach(d=>d.classList.remove('on'));
+  document.getElementById('dot-'+step).classList.add('on');
+}
+document.getElementById('ob-photo-input').addEventListener('change', (e)=>resizePhotoInto(e, 'ob-photo-preview'));
+
+let obDraftCatId = null;
+function obSaveCatAndGoto2(){
+  const name = document.getElementById('ob-name').value.trim();
+  const birth = document.getElementById('ob-birth').value;
+  const weight = parseFloat(document.getElementById('ob-weight').value);
+  if(!name || !birth || isNaN(weight)){ showToast('이름, 생년월일, 체중을 입력해주세요'); return; }
+  const photo = document.getElementById('ob-photo-preview').dataset.photo || '';
+  const neutered = document.getElementById('ob-neutered').value;
+  obDraftCatId = uid();
+  window.__obDraft = {id:obDraftCatId, name, birth, weight, photo, neutered, memo:''};
+  obActivitySelected = suggestedActivity(window.__obDraft);
+  renderObActivityOptions();
+  obGoto(2);
+}
+function renderObActivityOptions(){
+  const wrap = document.getElementById('ob-activity-options');
+  wrap.innerHTML = ACTIVITY_LEVELS.map(a=>`
+    <div class="activity-opt ${a.id===obActivitySelected?'selected':''}" data-id="${a.id}">
+      <b>${a.label}</b><span>${a.desc} · x${a.factor}</span>
+    </div>`).join('');
+  wrap.querySelectorAll('.activity-opt').forEach(opt=>{
+    opt.onclick = ()=>{
+      wrap.querySelectorAll('.activity-opt').forEach(o=>o.classList.remove('selected'));
+      opt.classList.add('selected');
+      obActivitySelected = opt.dataset.id;
+      obComputeDer();
+    };
+  });
+  obComputeDer();
+}
+function obComputeDer(){
+  const weight = window.__obDraft ? window.__obDraft.weight : parseFloat(document.getElementById('ob-weight').value);
+  if(!weight || isNaN(weight)) return;
+  const activity = ACTIVITY_LEVELS.find(a=>a.id===obActivitySelected);
+  const der = 70 * Math.pow(weight, 0.75) * activity.factor;
+  document.getElementById('ob-der-value').textContent = Math.round(der);
+  document.getElementById('ob-result').style.display = 'block';
+}
+async function finishOnboarding(){
+  if(!window.__obDraft){ showToast('냥이 정보를 먼저 입력해주세요'); obGoto(1); return; }
+  state.cats.push(window.__obDraft);
+  document.getElementById('onboarding').classList.add('hidden');
+  document.getElementById('main-app').classList.remove('hidden');
+  renderAll();
+  showToast(`${window.__obDraft.name}(이)가 냥장고에 등록됐어요!`);
+  await saveCats();
+}
+
+/* ---------------- Tabs ---------------- */
+document.querySelectorAll('nav.tabs button').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('nav.tabs button').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('section.panel').forEach(p=>p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('panel-'+btn.dataset.tab).classList.add('active');
+  });
+});
+function closeModal(id){ document.getElementById(id).classList.remove('active'); }
+function openModal(id){ document.getElementById(id).classList.add('active'); }
+
+/* ---------------- Photo resize helper ---------------- */
+function resizePhotoInto(e, previewId){
+  const file = e.target.files[0]; if(!file) return;
+  const reader = new FileReader();
+  reader.onload = (ev)=>{
+    const img = new Image();
+    img.onload = ()=>{
+      const size = 200;
+      const canvas = document.createElement('canvas'); canvas.width=size; canvas.height=size;
+      const ctx = canvas.getContext('2d');
+      const scale = Math.max(size/img.width, size/img.height);
+      const w = img.width*scale, h = img.height*scale;
+      ctx.drawImage(img, (size-w)/2, (size-h)/2, w, h);
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+      const preview = document.getElementById(previewId);
+      preview.innerHTML = `<img src="${dataUrl}">`;
+      preview.dataset.photo = dataUrl;
+    };
+    img.src = ev.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+/* ---------------- RENDER: Profile ---------------- */
+function renderProfile(){
+  const grid = document.getElementById('cat-grid');
+  grid.innerHTML = '';
+  state.cats.forEach(cat=>{
+    const div = document.createElement('div');
+    div.className = 'cat-card';
+    div.innerHTML = `
+      <div class="card-actions">
+        <button class="btn-icon" title="수정" onclick="editCat('${cat.id}')">✎</button>
+        <button class="btn-icon" title="삭제" onclick="deleteCat('${cat.id}')">✕</button>
+      </div>
+      <div class="cat-photo">${cat.photo ? `<img src="${cat.photo}">` : '🐾'}</div>
+      <h3>${escapeHtml(cat.name)}</h3>
+      <div class="meta">${ageLabel(cat.birth)} · ${cat.weight}kg</div>
+      <span class="tag">${cat.neutered==='yes' ? '중성화' : '비중성화'}</span>
+    `;
+    grid.appendChild(div);
+  });
+  const addCard = document.createElement('div');
+  addCard.className = 'add-cat-card';
+  addCard.innerHTML = `<div style="font-size:22px;">＋</div><div>냥이 등록하기</div>`;
+  addCard.onclick = ()=>openCatModal();
+  grid.appendChild(addCard);
+  updateStamp();
+  refreshCatSelectors();
+}
+function updateStamp(){ document.getElementById('cat-count-stamp').textContent = `냥이 ${state.cats.length}마리 · 냥장고 ${state.entries.length}건`; }
+
+function openCatModal(cat){
+  document.getElementById('cat-modal-title').textContent = cat ? '냥이 정보 수정' : '냥이 등록하기';
+  document.getElementById('cat-edit-id').value = cat ? cat.id : '';
+  document.getElementById('cat-name').value = cat ? cat.name : '';
+  document.getElementById('cat-birth').value = cat ? (cat.birth||'') : '';
+  document.getElementById('cat-weight').value = cat ? cat.weight : '';
+  document.getElementById('cat-neutered').value = cat ? cat.neutered : 'yes';
+  document.getElementById('cat-memo').value = cat ? (cat.memo||'') : '';
+  const preview = document.getElementById('cat-photo-preview');
+  preview.innerHTML = cat && cat.photo ? `<img src="${cat.photo}">` : '🐾';
+  preview.dataset.photo = cat && cat.photo ? cat.photo : '';
+  document.getElementById('cat-photo-input').value = '';
+  openModal('modal-cat');
+}
+function editCat(id){ openCatModal(catById(id)); }
+async function deleteCat(id){
+  if(!confirm('이 냥이 프로필을 삭제할까요? 관련 기록은 유지됩니다.')) return;
+  state.cats = state.cats.filter(c=>c.id!==id);
+  await saveCats();
+  if(state.cats.length===0){
+    document.getElementById('main-app').classList.add('hidden');
+    document.getElementById('onboarding').classList.remove('hidden');
+    obGoto(1);
+  }else{
+    renderProfile();
+  }
+  showToast('삭제했어요');
+}
+document.getElementById('cat-photo-input').addEventListener('change', (e)=>resizePhotoInto(e,'cat-photo-preview'));
+
+document.getElementById('btn-save-cat').addEventListener('click', async ()=>{
+  const id = document.getElementById('cat-edit-id').value;
+  const name = document.getElementById('cat-name').value.trim();
+  const birth = document.getElementById('cat-birth').value;
+  const weight = parseFloat(document.getElementById('cat-weight').value);
+  if(!name || !birth || isNaN(weight)){ showToast('이름, 생년월일, 체중을 입력해주세요'); return; }
+  const photo = document.getElementById('cat-photo-preview').dataset.photo || '';
+  const neutered = document.getElementById('cat-neutered').value;
+  const memo = document.getElementById('cat-memo').value.trim();
+  if(id){
+    Object.assign(catById(id), {name, birth, weight, photo, neutered, memo});
+  }else{
+    state.cats.push({id:uid(), name, birth, weight, photo, neutered, memo});
+  }
+  await saveCats();
+  closeModal('modal-cat');
+  renderProfile();
+  showToast('저장했어요');
+});
+
+/* ---------------- RENDER: 사냥터(catalog) ---------------- */
+const TYPE_LABEL = {dry:'건식', wet:'습식', freeze:'에어/동결', treat:'간식'};
+function renderCatalog(){
+  const brands = [...new Set(allFoods().map(f=>f.brand))].sort();
+  const brandChipsEl = document.getElementById('brand-chips');
+  brandChipsEl.innerHTML = `<button class="chip ${catalogFilter.brand==='all'?'active':''}" data-brand="all">전체 브랜드</button>` +
+    brands.map(b=>`<button class="chip ${catalogFilter.brand===b?'active':''}" data-brand="${escapeHtml(b)}">${escapeHtml(b)}</button>`).join('');
+  brandChipsEl.querySelectorAll('.chip').forEach(chip=>{ chip.onclick = ()=>{ catalogFilter.brand = chip.dataset.brand; renderCatalog(); }; });
+
+  let foods = allFoods();
+  if(catalogFilter.brand !== 'all') foods = foods.filter(f=>f.brand===catalogFilter.brand);
+  if(catalogFilter.type !== 'all') foods = foods.filter(f=>f.type===catalogFilter.type);
+  if(catalogFilter.q) foods = foods.filter(f=> (f.name+f.brand).toLowerCase().includes(catalogFilter.q.toLowerCase()));
+
+  const grid = document.getElementById('food-grid');
+  if(foods.length===0){
+    grid.innerHTML = `<div class="no-food-cta">찾는 사료가 없나요?<br>사냥터에 바로 등록하고 냥장고에 담아보세요.<br>
+      <button class="btn btn-coral btn-sm" onclick="document.getElementById('btn-add-food').click()">+ 새 사료 등록</button></div>`;
+    return;
+  }
+  grid.innerHTML = foods.map(f=>`
+    <div class="food-card">
+      <span class="type-tag type-${f.type}">${TYPE_LABEL[f.type]}</span>
+      <h4>${escapeHtml(f.name)}</h4>
+      <div class="brand">${escapeHtml(f.brand)}</div>
+      <div class="kcal">
+        ${f.packSize ? `1개(${f.packSize}g)당 <b>${f.packKcal}</b>kcal <span class="muted">· 100g당 ${f.kcal}kcal</span>` : `<b>${f.kcal}</b> kcal / 100g`}
+      </div>
+      ${f.addedByName ? `<div class="muted" style="font-size:10.5px;margin-bottom:8px;">🐾 ${escapeHtml(f.addedByName)}님이 등록</div>` : ''}
+      <button class="btn btn-coral btn-sm" onclick="openEntryModal('${f.id}')">냥장고에 넣기</button>
+    </div>
+  `).join('');
+}
+document.getElementById('food-search').addEventListener('input', (e)=>{ catalogFilter.q = e.target.value; renderCatalog(); });
+document.getElementById('type-chips').addEventListener('click', (e)=>{
+  const btn = e.target.closest('.chip'); if(!btn) return;
+  document.querySelectorAll('#type-chips .chip').forEach(c=>c.classList.remove('active'));
+  btn.classList.add('active');
+  catalogFilter.type = btn.dataset.type;
+  renderCatalog();
+});
+function setFoodBasis(basis){
+  foodBasis = basis;
+  document.getElementById('basis-100').classList.toggle('active', basis==='100');
+  document.getElementById('basis-pack').classList.toggle('active', basis==='pack');
+  document.getElementById('food-basis-100-fields').classList.toggle('hidden', basis!=='100');
+  document.getElementById('food-basis-pack-fields').classList.toggle('hidden', basis!=='pack');
+  updateFoodPackPreview();
+}
+document.getElementById('basis-100').addEventListener('click', ()=>setFoodBasis('100'));
+document.getElementById('basis-pack').addEventListener('click', ()=>setFoodBasis('pack'));
+function updateFoodPackPreview(){
+  const size = parseFloat(document.getElementById('food-pack-size').value);
+  const kcal = parseFloat(document.getElementById('food-pack-kcal').value);
+  const preview = document.getElementById('food-pack-preview');
+  if(size>0 && kcal>0){
+    preview.textContent = `→ 100g당 약 ${Math.round((kcal/size)*100)}kcal로 환산돼서 저장돼요`;
+  }else{
+    preview.textContent = '';
+  }
+}
+document.getElementById('food-pack-size').addEventListener('input', updateFoodPackPreview);
+document.getElementById('food-pack-kcal').addEventListener('input', updateFoodPackPreview);
+document.getElementById('food-type').addEventListener('change', (e)=>{
+  setFoodBasis(e.target.value==='wet' ? 'pack' : '100');
+});
+document.getElementById('btn-add-food').addEventListener('click', ()=>{
+  document.getElementById('food-brand').value=''; document.getElementById('food-name').value='';
+  document.getElementById('food-type').value='dry'; document.getElementById('food-kcal').value='';
+  document.getElementById('food-pack-size').value=''; document.getElementById('food-pack-kcal').value='';
+  setFoodBasis('100');
+  openModal('modal-food');
+});
+document.getElementById('btn-save-food').addEventListener('click', async ()=>{
+  const brand = document.getElementById('food-brand').value.trim();
+  const name = document.getElementById('food-name').value.trim();
+  const type = document.getElementById('food-type').value;
+  let kcal, packSize=null, packKcal=null;
+  if(foodBasis === 'pack'){
+    packSize = parseFloat(document.getElementById('food-pack-size').value);
+    packKcal = parseFloat(document.getElementById('food-pack-kcal').value);
+    if(!brand || !name || isNaN(packSize) || packSize<=0 || isNaN(packKcal) || packKcal<=0){ showToast('브랜드, 제품명, 포장중량, 포장당 칼로리를 입력해주세요'); return; }
+    kcal = Math.round((packKcal/packSize)*100*10)/10;
+  }else{
+    kcal = parseFloat(document.getElementById('food-kcal').value);
+    if(!brand || !name || isNaN(kcal)){ showToast('브랜드, 제품명, 칼로리를 입력해주세요'); return; }
+  }
+  const ok = await addFoodToCatalog({brand, name, type, kcal, packSize, packKcal, builtin:false});
+  if(!ok) return;
+  closeModal('modal-food');
+  showToast('사냥터에 등록했어요 — 모든 집사에게 보여요');
+});
+
+/* ---------------- RENDER: 냥장고 entry ---------------- */
+function openEntryModal(foodId, existingEntry){
+  const food = existingEntry ? foodById(existingEntry.foodId) : foodById(foodId);
+  document.getElementById('entry-modal-title').textContent = existingEntry ? '기록 수정' : '기호성 기록 남기기';
+  document.getElementById('entry-edit-id').value = existingEntry ? existingEntry.id : '';
+  document.getElementById('entry-food-display').innerHTML = `
+    <label>사료</label>
+    <div style="padding:9px 11px;background:#FBF8F1;border-radius:8px;font-size:13.5px;font-weight:700;">${escapeHtml(food.brand)} · ${escapeHtml(food.name)}</div>
+    <input type="hidden" id="entry-food-id" value="${food.id}">`;
+  const catSelect = document.getElementById('entry-cat-select');
+  catSelect.innerHTML = state.cats.map(c=>`<option value="${c.id}">${escapeHtml(c.name)}</option>`).join('') || '<option value="">등록된 냥이가 없어요</option>';
+  if(existingEntry) catSelect.value = existingEntry.catId;
+  entryPawTemp = existingEntry ? existingEntry.score : 3;
+  renderPawInput();
+  document.getElementById('entry-note').value = existingEntry ? (existingEntry.note||'') : '';
+  openModal('modal-entry');
+}
+function renderPawInput(){
+  const wrap = document.getElementById('entry-paw-input'); wrap.innerHTML = '';
+  for(let i=1;i<=5;i++){ const span=document.createElement('span'); span.innerHTML=pawSVG(i<=entryPawTemp); span.onclick=()=>{entryPawTemp=i; renderPawInput();}; wrap.appendChild(span); }
+}
+document.getElementById('btn-save-entry').addEventListener('click', async ()=>{
+  const editId = document.getElementById('entry-edit-id').value;
+  const foodId = document.getElementById('entry-food-id').value;
+  const catId = document.getElementById('entry-cat-select').value;
+  if(!catId){ showToast('먼저 프로필관리 탭에서 냥이를 등록해주세요'); return; }
+  const note = document.getElementById('entry-note').value.trim();
+  if(editId){ Object.assign(state.entries.find(e=>e.id===editId), {catId, score:entryPawTemp, note}); }
+  else{ state.entries.push({id:uid(), foodId, catId, score:entryPawTemp, note, date:new Date().toISOString()}); }
+  await saveEntries();
+  closeModal('modal-entry');
+  renderArchive();
+  renderFoodPickList();
+  updateStamp();
+  showToast('냥장고에 저장했어요');
+});
+
+function renderArchive(){
+  const filterSel = document.getElementById('entry-cat-filter');
+  const currentFilter = filterSel.value || 'all';
+  filterSel.innerHTML = '<option value="all">전체</option>' + state.cats.map(c=>`<option value="${c.id}">${escapeHtml(c.name)}</option>`).join('');
+  filterSel.value = currentFilter;
+
+  let entries = [...state.entries];
+  if(currentFilter !== 'all') entries = entries.filter(e=>e.catId===currentFilter);
+  const sort = document.getElementById('entry-sort').value;
+  entries.sort((a,b)=>{
+    if(sort==='date-desc') return new Date(b.date)-new Date(a.date);
+    if(sort==='date-asc') return new Date(a.date)-new Date(b.date);
+    if(sort==='score-desc') return b.score-a.score;
+    if(sort==='score-asc') return a.score-b.score;
+  });
+
+  const list = document.getElementById('entry-list');
+  if(entries.length===0){
+    list.innerHTML = `<div class="empty-state"><div class="paw-big">${pawSVG(true)}</div><div>아직 기록이 없어요. 사냥터에서 사료를 냥장고에 담아보세요.</div></div>`;
+    return;
+  }
+  list.innerHTML = entries.map(e=>{
+    const food = foodById(e.foodId); const cat = catById(e.catId);
+    const d = new Date(e.date);
+    const dateStr = `${d.getFullYear()}.${String(d.getMonth()+1).padStart(2,'0')}.${String(d.getDate()).padStart(2,'0')}`;
+    return `
+      <div class="entry-card">
+        <div class="avatar">${cat && cat.photo ? `<img src="${cat.photo}">` : '🐾'}</div>
+        <div class="entry-body">
+          <div class="entry-top"><h4>${food ? escapeHtml(food.brand)+' · '+escapeHtml(food.name) : '(삭제된 사료)'}</h4><div class="entry-date">${dateStr}</div></div>
+          <div class="entry-sub">${cat ? escapeHtml(cat.name) : '(삭제된 냥이)'}</div>
+          <div class="paw-rating">${pawRow(e.score)}</div>
+          ${e.note ? `<div class="entry-note">${escapeHtml(e.note)}</div>` : ''}
+        </div>
+        <div class="entry-actions">
+          <button class="btn-icon" title="수정" onclick="editEntry('${e.id}')">✎</button>
+          <button class="btn-icon" title="삭제" onclick="deleteEntry('${e.id}')">✕</button>
+        </div>
+      </div>`;
+  }).join('');
+}
+function editEntry(id){ openEntryModal(null, state.entries.find(e=>e.id===id)); }
+async function deleteEntry(id){
+  if(!confirm('이 기록을 삭제할까요?')) return;
+  state.entries = state.entries.filter(e=>e.id!==id);
+  await saveEntries();
+  renderArchive(); renderFoodPickList(); updateStamp();
+  showToast('삭제했어요');
+}
+document.getElementById('entry-cat-filter').addEventListener('change', renderArchive);
+document.getElementById('entry-sort').addEventListener('change', renderArchive);
+
+/* ---------------- Cat selectors shared ---------------- */
+function refreshCatSelectors(){
+  const sel = document.getElementById('c-cat-select');
+  const cur = sel.value;
+  sel.innerHTML = '<option value="">직접 입력</option>' + state.cats.map(c=>`<option value="${c.id}">${escapeHtml(c.name)}</option>`).join('');
+  sel.value = cur;
+}
+
+/* ---------------- 통합 칼로리 계산 ---------------- */
+function renderActivityOptions(containerId){
+  const wrap = document.getElementById(containerId);
+  wrap.innerHTML = ACTIVITY_LEVELS.map((a,i)=>`
+    <div class="activity-opt ${i===2?'selected':''}" data-id="${a.id}"><b>${a.label}</b><span>${a.desc} · x${a.factor}</span></div>
+  `).join('');
+  wrap.querySelectorAll('.activity-opt').forEach(opt=>{
+    opt.onclick = ()=>{ wrap.querySelectorAll('.activity-opt').forEach(o=>o.classList.remove('selected')); opt.classList.add('selected'); };
+  });
+}
+renderActivityOptions('c-activity-options');
+
+document.getElementById('c-cat-select').addEventListener('change', (e)=>{
+  const cat = catById(e.target.value);
+  if(cat){
+    document.getElementById('c-weight').value = cat.weight;
+    const wrap = document.getElementById('c-activity-options');
+    const suggest = suggestedActivity(cat);
+    wrap.querySelectorAll('.activity-opt').forEach(o=>o.classList.toggle('selected', o.dataset.id===suggest));
+  }
+});
+
+function getSelectedActivity(containerId){
+  const sel = document.querySelector(`#${containerId} .activity-opt.selected`);
+  const id = sel ? sel.dataset.id : 'neutered';
+  return ACTIVITY_LEVELS.find(a=>a.id===id);
+}
+function calcDER(weight, activity){ const rer = 70*Math.pow(weight,0.75); return {rer, der: rer*activity.factor}; }
+
+document.getElementById('btn-calc-der').addEventListener('click', ()=>{
+  const weight = parseFloat(document.getElementById('c-weight').value);
+  if(isNaN(weight) || weight<=0){ showToast('체중을 입력해주세요'); return; }
+  const activity = getSelectedActivity('c-activity-options');
+  const {rer, der} = calcDER(weight, activity);
+  calcState.der = der; calcState.weight = weight; calcState.activity = activity;
+  calcState.catId = document.getElementById('c-cat-select').value;
+
+  document.getElementById('c-der-value').textContent = Math.round(der);
+  document.getElementById('c-rer-sub').textContent = `RER ${Math.round(rer)}kcal × 활동계수 ${activity.factor} (${activity.label})`;
+  document.getElementById('der-result').classList.remove('hidden');
+  document.getElementById('step2-toggle-wrap').classList.remove('hidden');
+  updateFeedCompare();
+});
+
+document.getElementById('btn-toggle-food-calc').addEventListener('click', ()=>{
+  const card = document.getElementById('step2-card');
+  card.classList.toggle('hidden');
+  if(!card.classList.contains('hidden')) renderFoodPickList();
+});
+
+function renderFoodPickList(){
+  const wrap = document.getElementById('c-food-list');
+  if(state.entries.length===0){
+    wrap.innerHTML = `<div class="empty-state" style="padding:14px;">아직 냥장고에 담은 사료가 없어요.<br>사냥터에서 먼저 담아보세요.</div>`;
+    return;
+  }
+  const usedFoodIds = [...new Set(state.entries.map(e=>e.foodId))];
+  const foods = usedFoodIds.map(foodById).filter(Boolean);
+  wrap.innerHTML = foods.map(f=>`
+    <div class="food-pick ${calcState.selectedFoods[f.id]?'selected':''}" data-id="${f.id}">
+      <span>${calcState.selectedFoods[f.id]?'✓ ':''}${escapeHtml(f.brand)} · ${escapeHtml(f.name)} <span class="muted">(${TYPE_LABEL[f.type]})</span></span>
+      <span class="kcal-tag">${f.packSize ? `${f.packSize}g/${f.packKcal}kcal` : `${f.kcal}kcal/100g`}</span>
+    </div>`).join('');
+  wrap.querySelectorAll('.food-pick').forEach(el=>{
+    el.onclick = ()=> toggleFoodSelect(el.dataset.id);
+  });
+}
+function toggleFoodSelect(foodId){
+  if(calcState.selectedFoods[foodId]){
+    delete calcState.selectedFoods[foodId];
+  }else{
+    calcState.selectedFoods[foodId] = {times:2, grams:0};
+  }
+  renderFoodPickList();
+  renderStep3();
+  updateFeedCompare();
+}
+function renderStep3(){
+  const ids = Object.keys(calcState.selectedFoods);
+  const step3 = document.getElementById('step3-card');
+  if(ids.length===0){ step3.classList.add('hidden'); return; }
+  step3.classList.remove('hidden');
+  const rows = document.getElementById('step3-food-rows');
+  rows.innerHTML = ids.map(id=>{
+    const food = foodById(id);
+    const sel = calcState.selectedFoods[id];
+    const kcalLabel = food.packSize ? `1개(${food.packSize}g)당 ${food.packKcal}kcal · 100g당 ${food.kcal}kcal` : `${food.kcal}kcal/100g`;
+    return `
+      <div class="food-feed-row">
+        <div class="food-feed-row-head">
+          <span class="name">${escapeHtml(food.brand)} · ${escapeHtml(food.name)}</span>
+          <button class="btn-icon" title="제외" onclick="toggleFoodSelect('${id}')">✕</button>
+        </div>
+        <div class="kcal-tag" style="margin-bottom:6px;">${kcalLabel}</div>
+        <div class="feed-input-row">
+          <div class="field"><label>하루 급여 횟수</label><input type="number" min="1" max="10" value="${sel.times}" data-food="${id}" data-field="times" class="c-feed-input"></div>
+          <div class="field"><label>1회 급여량 (g)</label><input type="number" step="1" min="0" value="${sel.grams||''}" placeholder="예: 40" data-food="${id}" data-field="grams" class="c-feed-input"></div>
+        </div>
+        <div class="food-feed-kcal" id="food-feed-kcal-${id}"></div>
+      </div>`;
+  }).join('');
+  ids.forEach(updateFoodRowKcal);
+  rows.querySelectorAll('.c-feed-input').forEach(inp=>{
+    inp.addEventListener('input', ()=>{
+      const id = inp.dataset.food, field = inp.dataset.field;
+      calcState.selectedFoods[id][field] = parseFloat(inp.value) || 0;
+      updateFoodRowKcal(id);
+      updateFeedCompare();
+    });
+  });
+}
+function updateFoodRowKcal(id){
+  const el = document.getElementById('food-feed-kcal-'+id);
+  if(!el) return;
+  const food = foodById(id);
+  const sel = calcState.selectedFoods[id];
+  if(!sel || !sel.grams){ el.textContent = ''; return; }
+  const kcal = (food.kcal/100) * sel.grams * (sel.times||0);
+  el.innerHTML = `이 사료로 <b>${Math.round(kcal)} kcal</b> 급여 (1회 ${Math.round((food.kcal/100)*sel.grams)}kcal × ${sel.times||0}회)`;
+}
+function updateFeedCompare(){
+  if(!calcState.der){ return; }
+  const ids = Object.keys(calcState.selectedFoods);
+  const activeIds = ids.filter(id => (calcState.selectedFoods[id].grams||0) > 0);
+  if(activeIds.length===0){ document.getElementById('feed-compare').classList.add('hidden'); return; }
+  let fedKcal = 0;
+  activeIds.forEach(id=>{
+    const food = foodById(id);
+    const sel = calcState.selectedFoods[id];
+    fedKcal += (food.kcal/100) * (sel.grams||0) * (sel.times||0);
+  });
+  const pct = Math.min((fedKcal/calcState.der)*100, 150);
+  document.getElementById('feed-compare').classList.remove('hidden');
+  document.getElementById('feed-kcal-value').textContent = `${Math.round(fedKcal)} kcal (${Math.round((fedKcal/calcState.der)*100)}%)`;
+  document.getElementById('feed-bar-fill').style.width = pct+'%';
+  const statusEl = document.getElementById('feed-status');
+  const ratio = fedKcal/calcState.der;
+  if(ratio < 0.9){ statusEl.textContent = '⚠ 필요 칼로리보다 부족해요'; statusEl.style.color = '#F2C46A'; }
+  else if(ratio > 1.1){ statusEl.textContent = '⚠ 필요 칼로리보다 많아요'; statusEl.style.color = '#F2C46A'; }
+  else{ statusEl.textContent = '✓ 적정 급여량이에요'; statusEl.style.color = '#9CD08F'; }
+}
+
+/* ---------------- init ---------------- */
+function renderAll(){
+  renderProfile();
+  renderCatalog();
+  renderArchive();
+  renderFoodPickList();
+}
+</script>
+</body>
+</html>
