@@ -156,6 +156,7 @@
   .chip.active{background:var(--ink);color:#fff;border-color:var(--ink);}
   .food-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;}
   .food-card{background:var(--surface);border:1px solid var(--line-soft);border-radius:12px;padding:14px;box-shadow:var(--shadow);}
+  .food-card .food-img{width:100%;height:110px;object-fit:cover;border-radius:8px;margin-bottom:10px;background:var(--line-soft);}
   .food-card .type-tag{display:inline-block;font-size:10px;font-weight:800;padding:2px 8px;border-radius:20px;margin-bottom:8px;}
   .type-dry{background:var(--mustard-soft);color:#93701F;}
   .type-wet{background:var(--moss-soft);color:#4E5C34;}
@@ -310,6 +311,7 @@
     <button data-tab="hunt">사냥터</button>
     <button data-tab="fridge">냥장고</button>
     <button data-tab="calc">칼로리계산</button>
+    <button data-tab="admin" id="nav-admin-btn" style="display:none;">관리자</button>
   </nav>
 
   <!-- PROFILE -->
@@ -399,6 +401,13 @@
     </div>
   </section>
 
+  <!-- ADMIN (사냥터 전체 관리) -->
+  <section class="panel" id="panel-admin">
+    <h2 class="section-title">사냥터 관리</h2>
+    <p class="section-sub">유저들이 등록한 모든 사료를 수정하거나 삭제할 수 있어요. (관리자에게만 보여요)</p>
+    <div class="entry-list" id="admin-food-list"></div>
+  </section>
+
 </div>
 
 <!-- Modals -->
@@ -426,9 +435,16 @@
 
 <div class="modal-backdrop" id="modal-food">
   <div class="modal">
-    <div class="modal-head"><h3>새 사료 등록</h3><button class="btn-icon" onclick="closeModal('modal-food')">✕</button></div>
+    <div class="modal-head"><h3 id="modal-food-title">새 사료 등록</h3><button class="btn-icon" onclick="closeModal('modal-food')">✕</button></div>
     <div class="field"><label>브랜드</label><input type="text" id="food-brand" placeholder="예: 로얄캐닌"></div>
     <div class="field"><label>제품명</label><input type="text" id="food-name" placeholder="예: 인도어 어덜트"></div>
+    <div class="field">
+      <label>사료 이미지 (선택)</label>
+      <div class="photo-upload">
+        <div class="preview" id="food-photo-preview" style="border-radius:8px;">🥫</div>
+        <input type="file" accept="image/*" id="food-photo-input">
+      </div>
+    </div>
     <div class="field"><label>종류</label>
       <select id="food-type"><option value="dry">건식</option><option value="wet">습식</option><option value="freeze">에어/동결</option><option value="treat">간식</option></select>
     </div>
@@ -513,6 +529,7 @@ let catalogFilter = { type:'all', brand:'all', q:'' };
 let entryPawTemp = 3;
 let obActivitySelected = 'neutered';
 let foodBasis = '100';
+let editingFoodId = null;
 let calcState = { der:null, catId:'', weight:null, activity:null, selectedFoods:{} };
 window.addEventListener('error', (e)=>{
   try{ showToast('오류: ' + (e.message||'알 수 없는 오류')); }catch(_){}
@@ -532,6 +549,9 @@ const auth = firebase.auth();
 const db = firebase.firestore();
 let currentUser = null;
 
+// 관리자로 지정할 구글 로그인 이메일을 여기에 넣어주세요. (여러 명이면 콤마로 추가)
+const ADMIN_EMAILS = ["duckyy0912@gmail.com"];
+
 document.getElementById('btn-google-login').addEventListener('click', async ()=>{
   const provider = new firebase.auth.GoogleAuthProvider();
   try{
@@ -547,6 +567,7 @@ auth.onAuthStateChanged(async (user)=>{
   if(user){
     currentUser = user;
     document.getElementById('login-gate').classList.add('hidden');
+    document.getElementById('nav-admin-btn').style.display = ADMIN_EMAILS.includes(user.email) ? '' : 'none';
     await loadAll();
   }else{
     currentUser = null;
@@ -580,6 +601,7 @@ async function loadAll(){
     state.customFoods = snap.docs.map(d=>({id:d.id, ...d.data()}));
     renderCatalog();
     renderFoodPickList();
+    renderAdmin();
   }, (e)=>{
     console.error('catalogFoods listen failed', e);
     showToast('사냥터 데이터를 불러오지 못했어요: ' + (e.message || e.code || ''));
@@ -623,6 +645,26 @@ async function addFoodToCatalog(food){
     console.error('addFoodToCatalog failed', e);
     showToast('사료 등록에 실패했어요. 네트워크 상태를 확인해주세요');
     return false;
+  }
+}
+async function updateFoodInCatalog(id, patch){
+  try{
+    await db.collection('catalogFoods').doc(id).update(patch);
+    return true;
+  }catch(e){
+    console.error('updateFoodInCatalog failed', e);
+    showToast('수정에 실패했어요: ' + (e.message || e.code || ''));
+    return false;
+  }
+}
+async function deleteFoodFromCatalog(id){
+  if(!confirm('이 사료를 사냥터에서 삭제할까요?')) return;
+  try{
+    await db.collection('catalogFoods').doc(id).delete();
+    showToast('삭제했어요');
+  }catch(e){
+    console.error('deleteFoodFromCatalog failed', e);
+    showToast('삭제에 실패했어요: ' + (e.message || e.code || ''));
   }
 }
 
@@ -814,6 +856,7 @@ async function deleteCat(id){
   showToast('삭제했어요');
 }
 document.getElementById('cat-photo-input').addEventListener('change', (e)=>resizePhotoInto(e,'cat-photo-preview'));
+document.getElementById('food-photo-input').addEventListener('change', (e)=>resizePhotoInto(e,'food-photo-preview'));
 
 document.getElementById('btn-save-cat').addEventListener('click', async ()=>{
   const id = document.getElementById('cat-edit-id').value;
@@ -857,13 +900,13 @@ function renderCatalog(){
   }
   grid.innerHTML = foods.map(f=>`
     <div class="food-card">
+      ${f.imageUrl ? `<img class="food-img" src="${f.imageUrl}">` : ''}
       <span class="type-tag type-${f.type}">${TYPE_LABEL[f.type]}</span>
       <h4>${escapeHtml(f.name)}</h4>
       <div class="brand">${escapeHtml(f.brand)}</div>
       <div class="kcal">
         ${f.packSize ? `1개(${f.packSize}g)당 <b>${f.packKcal}</b>kcal <span class="muted">· 100g당 ${f.kcal}kcal</span>` : `<b>${f.kcal}</b> kcal / 100g`}
       </div>
-      ${f.addedByName ? `<div class="muted" style="font-size:10.5px;margin-bottom:8px;">🐾 ${escapeHtml(f.addedByName)}님이 등록</div>` : ''}
       <button class="btn btn-coral btn-sm" onclick="openEntryModal('${f.id}')">냥장고에 넣기</button>
     </div>
   `).join('');
@@ -902,16 +945,44 @@ document.getElementById('food-type').addEventListener('change', (e)=>{
   setFoodBasis(e.target.value==='wet' ? 'pack' : '100');
 });
 document.getElementById('btn-add-food').addEventListener('click', ()=>{
+  editingFoodId = null;
+  document.getElementById('modal-food-title').textContent = '새 사료 등록';
   document.getElementById('food-brand').value=''; document.getElementById('food-name').value='';
   document.getElementById('food-type').value='dry'; document.getElementById('food-kcal').value='';
   document.getElementById('food-pack-size').value=''; document.getElementById('food-pack-kcal').value='';
+  const preview = document.getElementById('food-photo-preview');
+  preview.innerHTML = '🥫'; preview.dataset.photo = '';
+  document.getElementById('food-photo-input').value = '';
   setFoodBasis('100');
   openModal('modal-food');
 });
+function openFoodEditModal(id){
+  const f = foodById(id);
+  if(!f) return;
+  editingFoodId = id;
+  document.getElementById('modal-food-title').textContent = '사료 정보 수정';
+  document.getElementById('food-brand').value = f.brand;
+  document.getElementById('food-name').value = f.name;
+  document.getElementById('food-type').value = f.type;
+  const preview = document.getElementById('food-photo-preview');
+  preview.innerHTML = f.imageUrl ? `<img src="${f.imageUrl}">` : '🥫';
+  preview.dataset.photo = f.imageUrl || '';
+  document.getElementById('food-photo-input').value = '';
+  if(f.packSize){
+    document.getElementById('food-pack-size').value = f.packSize;
+    document.getElementById('food-pack-kcal').value = f.packKcal;
+    setFoodBasis('pack');
+  }else{
+    document.getElementById('food-kcal').value = f.kcal;
+    setFoodBasis('100');
+  }
+  openModal('modal-food');
+}
 document.getElementById('btn-save-food').addEventListener('click', async ()=>{
   const brand = document.getElementById('food-brand').value.trim();
   const name = document.getElementById('food-name').value.trim();
   const type = document.getElementById('food-type').value;
+  const imageUrl = document.getElementById('food-photo-preview').dataset.photo || null;
   let kcal, packSize=null, packKcal=null;
   if(foodBasis === 'pack'){
     packSize = parseFloat(document.getElementById('food-pack-size').value);
@@ -922,10 +993,17 @@ document.getElementById('btn-save-food').addEventListener('click', async ()=>{
     kcal = parseFloat(document.getElementById('food-kcal').value);
     if(!brand || !name || isNaN(kcal)){ showToast('브랜드, 제품명, 칼로리를 입력해주세요'); return; }
   }
-  const ok = await addFoodToCatalog({brand, name, type, kcal, packSize, packKcal, builtin:false});
+  const wasEditing = !!editingFoodId;
+  let ok;
+  if(wasEditing){
+    ok = await updateFoodInCatalog(editingFoodId, {brand, name, type, kcal, packSize, packKcal, imageUrl});
+    editingFoodId = null;
+  }else{
+    ok = await addFoodToCatalog({brand, name, type, kcal, packSize, packKcal, imageUrl, builtin:false});
+  }
   if(!ok) return;
   closeModal('modal-food');
-  showToast('사냥터에 등록했어요 — 모든 집사에게 보여요');
+  showToast(wasEditing ? '수정했어요' : '사냥터에 등록했어요 — 모든 집사에게 보여요');
 });
 
 /* ---------------- RENDER: 냥장고 entry ---------------- */
@@ -1168,6 +1246,27 @@ function updateFeedCompare(){
 }
 
 /* ---------------- init ---------------- */
+function renderAdmin(){
+  const wrap = document.getElementById('admin-food-list');
+  if(!wrap) return;
+  if(state.customFoods.length===0){
+    wrap.innerHTML = `<div class="empty-state">아직 유저가 등록한 사료가 없어요.</div>`;
+    return;
+  }
+  wrap.innerHTML = state.customFoods.map(f=>`
+    <div class="entry-card" style="border-left-color:var(--sky);">
+      <div class="avatar">${f.imageUrl ? `<img src="${f.imageUrl}">` : '🥫'}</div>
+      <div class="entry-body">
+        <div class="entry-top"><h4>${escapeHtml(f.brand)} · ${escapeHtml(f.name)}</h4></div>
+        <div class="entry-sub">${TYPE_LABEL[f.type]} · ${f.kcal}kcal/100g${f.addedByName ? ' · 등록: '+escapeHtml(f.addedByName) : ''}</div>
+      </div>
+      <div class="entry-actions">
+        <button class="btn-icon" title="수정" onclick="openFoodEditModal('${f.id}')">✎</button>
+        <button class="btn-icon" title="삭제" onclick="deleteFoodFromCatalog('${f.id}')">✕</button>
+      </div>
+    </div>
+  `).join('');
+}
 function renderAll(){
   renderProfile();
   renderCatalog();

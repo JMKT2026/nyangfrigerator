@@ -8,11 +8,12 @@ service cloud.firestore {
 
     // 사냥터(사료 카탈로그)는 로그인한 모든 유저가 읽을 수 있고,
     // 새로 등록(create)도 누구나 가능해요 — 집단지성 아카이브라서요.
-    // 단, 수정/삭제는 그 항목을 등록한 본인만 할 수 있어요.
+    // 수정/삭제는 그 항목을 등록한 본인이거나, 관리자 이메일만 할 수 있어요.
     match /catalogFoods/{foodId} {
       allow read: if request.auth != null;
       allow create: if request.auth != null && request.resource.data.addedBy == request.auth.uid;
-      allow update, delete: if request.auth != null && resource.data.addedBy == request.auth.uid;
+      allow update, delete: if request.auth != null &&
+        (resource.data.addedBy == request.auth.uid || request.auth.token.email == "duckyy0912@gmail.com");
     }
   }
 }
